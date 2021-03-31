@@ -31,10 +31,18 @@ class ConsoleApp:
         self.load_all_products_data()
 
         while True:
-            # self.single_phone_stocks()
-            # self.single_bike_stocks()
-            self.all_phone_stocks(self.channels_dict['all_phone_stocks'])
-            time.sleep(5)
+            self.loop_all_products()
+            
+    def loop_all_products(self):
+        ###todo -> test these two features
+        self.single_phone_stocks()
+        self.single_bike_stocks()
+        ###
+        self.all_phones_stocks(self.channels_dict['all_phones_stocks'])
+        self.all_bikes_stocks(self.channels_dict['all_bikes_stocks'])
+        self.all_phones_stock_outs(self.channels_dict['all_phones_stock_outs'])
+        self.all_bikes_stock_outs(self.channels_dict['all_bikes_stock_outs'])
+        time.sleep(15)
 
     def load_all_products_data(self):
         # load smartphone database
@@ -58,28 +66,25 @@ class ConsoleApp:
         self.db_dict_smartphones['products'] = sorted(self.db_dict_smartphones['products'], key=lambda k: k['name'])
 
 
-        # # load bike database
-        # page_count_bikes = 1
-        # self.db_dict_bikes = {'products':[],'total_product_count':''}
-        # # fetch all bikes pages
-        # while True:
-        #     url_bikes = f'https://eorange.shop/get-products/Motorcycle-Scooter?type=category&page={page_count_bikes}&filter=%7B%22short_by%22:%22popularity%22,%22seller_by%22:[],%22brand_by%22:[],%22price%22:%7B%22min%22:0,%22max%22:0%7D%7D'
-        #     self.print_log(f'fetching bike page {page_count_bikes}...')
-        #     api_dict = requests.get(url_bikes).json()
-        #     last_page = api_dict['data']['products']['last_page']
-        #     product_list = api_dict['data']['products']['data']
+        # load bike database
+        page_count_bikes = 1
+        self.db_dict_bikes = {'products':[],'total_product_count':''}
+        # fetch all bikes pages
+        while True:
+            url_bikes = f'https://eorange.shop/get-products/Motorcycle-Scooter?type=category&page={page_count_bikes}&filter=%7B%22short_by%22:%22popularity%22,%22seller_by%22:[],%22brand_by%22:[],%22price%22:%7B%22min%22:0,%22max%22:0%7D%7D'
+            self.print_log(f'fetching bike page {page_count_bikes}...')
+            api_dict = requests.get(url_bikes).json()
+            last_page = api_dict['data']['products']['last_page']
+            product_list = api_dict['data']['products']['data']
 
-        #     self.db_dict_bikes['products'] += product_list
+            self.db_dict_bikes['products'] += product_list
 
-        #     if page_count_bikes == last_page:
-        #         self.db_dict_bikes['total_product_count'] = api_dict['data']['products']['total']
-        #         break
-        #     page_count_bikes += 1
-        # # sort product list
-        # self.db_dict_bikes['products'] = sorted(self.db_dict_bikes['products'], key=lambda k: k['name'])
-
-
-        
+            if page_count_bikes == last_page:
+                self.db_dict_bikes['total_product_count'] = api_dict['data']['products']['total']
+                break
+            page_count_bikes += 1
+        # sort product list
+        self.db_dict_bikes['products'] = sorted(self.db_dict_bikes['products'], key=lambda k: k['name'])
         
     def bot_send_embed(self, channel, fields, title='Title', desc='desc', colour=0xFF0000, timestamp=datetime.utcnow(), author_name='BDCG', footer='footer'):
         embed = Embed(title=title, description=desc,
@@ -92,14 +97,37 @@ class ConsoleApp:
         embed.set_footer(text=footer)
         asyncio.run_coroutine_threadsafe(channel.send(embed=embed), self.evt_loop)
 
-    def all_phone_stocks(self, channel):
+    def all_phones_stocks(self, channel):
         in_stock = []
         for product in self.db_dict_smartphones['products']:
             if product['stock'] != 0:
                 product['name'] = product['name'][:13]+'..'
                 in_stock.append(product)
-        retn = f"\n\n\nUpdated On --> {datetime.now().strftime('%d/%m/%y >> %-I:%M%:%S %p')}"
         return self.dic_to_table(in_stock, channel)
+
+    def all_bikes_stocks(self, channel):
+        in_stock = []
+        for product in self.db_dict_bikes['products']:
+            if product['stock'] != 0:
+                product['name'] = product['name'][:13]+'..'
+                in_stock.append(product)
+        return self.dic_to_table(in_stock, channel)
+
+    def all_phones_stock_outs(self, channel):
+        out_of_stock = []
+        for product in self.db_dict_smartphones['products']:
+            if product['stock'] == 0:
+                product['name'] = product['name'][:13]+'..'
+                out_of_stock.append(product)
+        return self.dic_to_table(out_of_stock, channel)       
+
+    def all_bikes_stock_outs(self, channel):
+        out_of_stock = []
+        for product in self.db_dict_bikes['products']:
+            if product['stock'] == 0:
+                product['name'] = product['name'][:13]+'..'
+                out_of_stock.append(product)
+        return self.dic_to_table(out_of_stock, channel)
 
     def single_phone_stocks(self):
         self.print_log('checking single phone stocks...')
@@ -109,6 +137,7 @@ class ConsoleApp:
         db_dict_smartphones_new = {'products':[],'total_product_count':''}
         # fetch all smartphones pages
         while True:
+            # url_smartphones = 'https://jsonbin.io/6064cd6418592d461f044c38/latest'
             url_smartphones = f'https://eorange.shop/get-products/Smartphone?type=category&page={page_count_smartphones}&filter=%7B%22short_by%22:%22popularity%22,%22seller_by%22:[],%22brand_by%22:[],%22price%22:%7B%22min%22:0,%22max%22:0%7D%7D'
             self.print_log(f'fetching smartphone page {page_count_smartphones}...')
             api_dict = requests.get(url_smartphones).json()
@@ -117,8 +146,6 @@ class ConsoleApp:
 
             db_dict_smartphones_new['products'] += product_list
 
-            print(page_count_smartphones, last_page)
-            input('press')
             if page_count_smartphones == last_page:
                 db_dict_smartphones_new['total_product_count'] = api_dict['data']['products']['total']
                 break
@@ -166,6 +193,7 @@ class ConsoleApp:
         db_dict_bikes_new = {'products':[],'total_product_count':''}
         # fetch all bikes pages
         while True:
+            # url_bikes = 'https://jsonbin.io/6064cccf18592d461f044bd6/latest'
             url_bikes = f'https://eorange.shop/get-products/Motorcycle-Scooter?type=category&page={page_count_bikes}&filter=%7B%22short_by%22:%22popularity%22,%22seller_by%22:[],%22brand_by%22:[],%22price%22:%7B%22min%22:0,%22max%22:0%7D%7D'
             self.print_log(f'fetching bike page {page_count_bikes}...')
             api_dict = requests.get(url_bikes).json()
@@ -207,23 +235,40 @@ class ConsoleApp:
             else:
                 # product name didn't match
                 self.print_log('product name did not match')
-        self.db_dict_bikes = db_dict_bikes.copy()
+        self.db_dict_bikes = db_dict_bikes_new.copy()
 
 
     def dic_to_table(self, dic, channel):
+        timestamp = f"```\n\n\nUpdated On --> {datetime.now().strftime('%d/%m/%y >> %-I:%M:%S %p')}```"
         df=pd.DataFrame(dic, columns=['name', 'stock', 'price'])
+        df.index += 1
         df_idx_len = len(df.index)
-        idx_row_start = 0
-        idx_row_end = 0
-        # if df_idx_len > 16:
-        while df_idx_len > 16:
-            idx_row_end += 16
-            styled_table = '```'+tabulate(df.iloc[idx_row_start:idx_row_end], headers=['Products', 'Stocks', 'Prices'], tablefmt='fancy_grid')+'```'
-            df_idx_len -= 16
-            idx_row_start += 16
+        if df_idx_len <= 15:
+            styled_table = '```'+tabulate(df, headers=['Products', 'Stocks', 'Prices'], tablefmt='fancy_grid')+'```'
+            self.bot_log(timestamp, channel)
             self.bot_log(styled_table, channel)
-        styled_table = '```'+tabulate(df.iloc[idx_row_end:], headers=['Products', 'Stocks', 'Prices'], tablefmt='fancy_grid')+'```'
-        self.bot_log(styled_table, channel)
+        else:
+            idx_row_start = 0
+            idx_row_end = 0
+            # if df_idx_len > 16:
+            is_first_loop = True
+            while df_idx_len > 15:
+                idx_row_end += 15
+                if is_first_loop:
+                    styled_table = '```'+tabulate(df.iloc[idx_row_start:idx_row_end], headers=['Products', 'Stocks', 'Prices'], tablefmt='fancy_grid')+'```'
+                    idx_row_start += 15
+                    df_idx_len -= 15
+                    is_first_loop = False
+                    self.bot_log(timestamp, channel)
+                    self.bot_log(styled_table, channel)
+                else:
+                    time.sleep(5)
+                    styled_table = '```'+tabulate(df.iloc[idx_row_start:idx_row_end], tablefmt='fancy_grid')+'```'
+                    idx_row_start += 15
+                    df_idx_len -= 15
+                    self.bot_log(styled_table, channel)
+            styled_table = '```'+tabulate(df.iloc[idx_row_end:], tablefmt='fancy_grid')+'```'
+            self.bot_log(styled_table, channel)
 
     def bot_log(self, msg, channel):
         # await channel.send('Test') # We can't do this because of the above comment
@@ -243,9 +288,13 @@ class DiscordBot(commands.Bot):
         self.bg_task = bg_task
 
         # necessary IDs
-        self.CH_ID_all_phone_stocks = 825498395400601630
+        self.CH_ID_robot_commands = 826883934750507069
         self.CH_ID_single_phone_stocks = 825526202017775646
         self.CH_ID_single_bike_stocks = 825791268755079178
+        self.CH_ID_all_phones_stocks = 825498395400601630
+        self.CH_ID_all_bikes_stocks = 826880912225468467
+        self.CH_ID_all_phones_stock_outs = 826883287267672135
+        self.CH_ID_all_bikes_stock_outs = 826883488036683806
         self.GUILD_ID = 823819408894984262
     
     def run(self):
@@ -267,9 +316,13 @@ class DiscordBot(commands.Bot):
         self.print_log(f'Guild Name: {guild}')
 
         self.channels_dict = dict(
-            all_phone_stocks = self.get_channel(self.CH_ID_all_phone_stocks),
+            robot_commands = self.get_channel(self.CH_ID_robot_commands),
             single_phone_stocks = self.get_channel(self.CH_ID_single_phone_stocks),
             single_bike_stocks = self.get_channel(self.CH_ID_single_bike_stocks),
+            all_phones_stocks = self.get_channel(self.CH_ID_all_phones_stocks),
+            all_bikes_stocks = self.get_channel(self.CH_ID_all_bikes_stocks),
+            all_phones_stock_outs = self.get_channel(self.CH_ID_all_phones_stock_outs),
+            all_bikes_stock_outs = self.get_channel(self.CH_ID_all_bikes_stock_outs),
             )
 
         self.kwargs = dict(
