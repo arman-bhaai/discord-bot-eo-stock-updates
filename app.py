@@ -1,8 +1,7 @@
 # discord bot for updating stock information of eorange
-# concept of sending discord message from background task >> https://stackoverflow.com/a/64370097
 import discord
 from discord import Embed
-from discord.ext import commands
+from discord.ext import commands, tasks
 from discord.ext.commands import command, Cog
 import logging
 import asyncio
@@ -38,7 +37,7 @@ class ConsoleApp:
         ###todo -> test these two features
         self.single_phone_stocks()
         self.single_bike_stocks()
-        ###
+        ### endtodo
         self.all_phones_stocks(self.channels_dict['all_phones_stocks'])
         self.all_bikes_stocks(self.channels_dict['all_bikes_stocks'])
         self.all_phones_stock_outs(self.channels_dict['all_phones_stock_outs'])
@@ -282,16 +281,46 @@ class MyCog(Cog):
     def __init__(self, bot, bg_task):
         self.bot = bot
         self.bg_task =  bg_task
+        self.req = {}
+        self.evt_exit_thread = threading.Event()
+
+    def reqq(self, evt_loop):
+        while True:
+            if self.evt_exit_thread.is_set():
+                self.evt_exit_thread.clear()
+                break
+            asyncio.run_coroutine_threadsafe(self.send_log('run loop', self.bot.channels_dict['robot_commands']), evt_loop)
+            self.req = requests.get('https://api.jsonbin.io/b/6065ca51861c8e2b6a82deef/latest').json()
+            asyncio.run_coroutine_threadsafe(self.send_log(self.req, self.bot.channels_dict['robot_commands']), evt_loop)
+            # await self.bot.channels_dict['robot_commands'].send(self.req)
+            # await asyncio.sleep(5)
+            asyncio.run_coroutine_threadsafe(self.send_log('end loop', self.bot.channels_dict['robot_commands']), evt_loop)
+            time.sleep(10)
+
 
     @command()
-    async def aa(self, ctx):
-        print('bbb')
+    async def r(self, ctx):
+        threading.Thread(
+            target=self.reqq,
+            args=(asyncio.get_event_loop(),)
+        ).start()
+    
+    @command()
+    async def rk(self, ctx):
+        self.evt_exit_thread.set()
+        await ctx.send('command granted')
+
+
+    @command()
+    async def s(self, ctx):
+        await self.bot.channels_dict['robot_commands'].send(f'new command\n\n{self.req}')
+
 
     @Cog.listener()
     async def on_ready(self):
         print("MyCog is ready")
 
-        self.blocker_background_task()
+        ### self.blocker_background_task()
 
     async def send_log(self, msg, channel):
         print(msg, datetime.now().isoformat(), '\n\n')
@@ -306,6 +335,10 @@ class MyCog(Cog):
             args=(self, asyncio.get_event_loop(), self.bot.channels_dict, self.bot.kwargs)
         )
         t_bg_task.start()
+
+    def bot_log(self, msg, channel):
+        # await channel.send('Test') # We can't do this because of the above comment
+        asyncio.run_coroutine_threadsafe(self.send_log(msg, channel), self.evt_loop)
 
 
 class DiscordBot(commands.Bot):
@@ -370,3 +403,8 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+### useful links
+# concept of sending discord message from background task >> https://stackoverflow.com/a/64370097
+# concept of killing threads gracefully >> https://blog.miguelgrinberg.com/post/how-to-kill-a-python-thread
