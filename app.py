@@ -3,6 +3,7 @@
 import discord
 from discord import Embed
 from discord.ext import commands
+from discord.ext.commands import command, Cog
 import logging
 import asyncio
 import threading
@@ -237,7 +238,6 @@ class ConsoleApp:
                 self.print_log('product name did not match')
         self.db_dict_bikes = db_dict_bikes_new.copy()
 
-
     def dic_to_table(self, dic, channel):
         timestamp = f"```\n\n\nUpdated On --> {datetime.now().strftime('%d/%m/%y >> %-I:%M:%S %p')}```"
         df=pd.DataFrame(dic, columns=['name', 'stock', 'price'])
@@ -276,16 +276,42 @@ class ConsoleApp:
 
     def print_log(self, msg):
         print(msg)
-        
 
+
+class MyCog(Cog):
+    def __init__(self, bot, bg_task):
+        self.bot = bot
+        self.bg_task =  bg_task
+
+    @command()
+    async def aa(self, ctx):
+        print('bbb')
+
+    @Cog.listener()
+    async def on_ready(self):
+        print("MyCog is ready")
+
+        self.blocker_background_task()
+
+    async def send_log(self, msg, channel):
+        print(msg, datetime.now().isoformat(), '\n\n')
+        await channel.send(msg)
+
+    def print_log(self, msg):
+        print(msg)
+
+    def blocker_background_task(self):
+        t_bg_task = threading.Thread(
+            target=self.bg_task,
+            args=(self, asyncio.get_event_loop(), self.bot.channels_dict, self.bot.kwargs)
+        )
+        t_bg_task.start()
 
 
 class DiscordBot(commands.Bot):
-    def __init__(self, bg_task):
-        command_prefix = '..'
+    def __init__(self):
+        command_prefix = '+'
         super().__init__(command_prefix=command_prefix)
-
-        self.bg_task = bg_task
 
         # necessary IDs
         self.CH_ID_robot_commands = 826883934750507069
@@ -296,7 +322,7 @@ class DiscordBot(commands.Bot):
         self.CH_ID_all_phones_stock_outs = 826883287267672135
         self.CH_ID_all_bikes_stock_outs = 826883488036683806
         self.GUILD_ID = 823819408894984262
-    
+     
     def run(self):
         DISCORD_TOKEN = os.environ['DISCORD_TOKEN']
 
@@ -311,10 +337,6 @@ class DiscordBot(commands.Bot):
 
     # @self.event
     async def on_ready(self):
-        self.print_log('bot is ready')
-        guild = self.get_guild(self.GUILD_ID)
-        self.print_log(f'Guild Name: {guild}')
-
         self.channels_dict = dict(
             robot_commands = self.get_channel(self.CH_ID_robot_commands),
             single_phone_stocks = self.get_channel(self.CH_ID_single_phone_stocks),
@@ -326,32 +348,25 @@ class DiscordBot(commands.Bot):
             )
 
         self.kwargs = dict(
-            guild=guild
+            guild=self.get_guild(self.GUILD_ID)
             )
 
-        self.blocker_background_task()
-
-    async def send_log(self, msg, channel):
-        print(msg, datetime.now().isoformat(), '\n\n')
-        msg_ext = msg + '\n\n'
-        await channel.send(msg_ext)
+        self.print_log('bot is ready')
+        self.print_log(f'Guild Name: {self.kwargs["guild"]}')
+    
+    async def on_message(self, message):
+        if not message.author.bot:
+            await self.process_commands(message)
 
     def print_log(self, msg):
         print(msg)
 
-    def blocker_background_task(self):
-        threading.Thread(
-            target=self.bg_task,
-            args=(self, asyncio.get_event_loop(), self.channels_dict, self.kwargs)
-        ).start()
-    
-    async def on_message(self, message):
-        pass
-
 def main():
     load_dotenv()
-    dbot = DiscordBot(bg_task=ConsoleApp)
+    dbot = DiscordBot()
+    dbot.add_cog(MyCog(dbot, bg_task=ConsoleApp))
     dbot.run()
+    
 
 if __name__ == "__main__":
     main()
