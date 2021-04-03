@@ -6,6 +6,7 @@ from discord.ext.commands import command, Cog
 import logging
 import asyncio
 import threading
+from concurrent.futures import ThreadPoolExecutor
 
 import requests
 import json
@@ -20,71 +21,112 @@ from dotenv import load_dotenv
 
 
 class ConsoleApp:
-    def __init__(self, dc_bot, evt_loop, channels_dict, kwargs):
+    def __init__(self, bot_cog, evt_loop, channels_dict, kwargs):
         self.evt_loop = evt_loop
         self.channels_dict = channels_dict
-        self.dc_bot = dc_bot
+        self.bot_cog = bot_cog
         self.kwargs = kwargs
         self.print_log('running ConsoleApp')
-        self.print_log('requesting eorange data api')
+        self.db_dict_smartphones_old = {}
+        self.db_dict_bikes_old = {}
+        # self.print_log('requesting eorange data api')
         
-        self.load_all_products_data()
+        # self.load_all_products_data()
 
+        # while True:
+        #     self.loop_all_products()
         while True:
-            self.loop_all_products()
+            # display single smartphone stocks
+            db_dict_products_new = self.single_product_stocks(
+                'smartphone',
+                self.bot_cog.db_dict_smartphones,
+                self.db_dict_smartphones_old,
+                self.channels_dict['single_phone_stocks']
+            )
+            self.print_log('substituting old smartphone db with recent db')
+            self.db_dict_smartphones_old = db_dict_products_new
+            print('sleep 5 sec sing product stock')
+
+            # display single bike stocks
+            db_dict_products_new = self.single_product_stocks(
+                'bike',
+                self.bot_cog.db_dict_bikes,
+                self.db_dict_bikes_old,
+                self.channels_dict['single_bike_stocks']
+            )
+            self.print_log('substituting old bike db with recent db')
+            self.db_dict_smartphones_old = db_dict_products_new
+            print('sleep 5 sec sing product stock')
+            time.sleep(5)
+
             
     def loop_all_products(self):
-        ###todo -> test these two features
-        self.single_phone_stocks()
-        self.single_bike_stocks()
-        ### endtodo
-        self.all_phones_stocks(self.channels_dict['all_phones_stocks'])
-        self.all_bikes_stocks(self.channels_dict['all_bikes_stocks'])
-        self.all_phones_stock_outs(self.channels_dict['all_phones_stock_outs'])
-        self.all_bikes_stock_outs(self.channels_dict['all_bikes_stock_outs'])
-        time.sleep(15)
+        # show mass products stocks
+        self.mass_products_stocks(
+            self.bot_cog.db_dict_smartphones,
+            self.channels_dict['all_phones_stocks'],
+            'smartphones'
+        )
+        self.mass_products_stocks(
+            self.bot_cog.db_dict_smartphones,
+            self.channels_dict['all_bikes_stocks'],
+            'bikes'
+        )
+        # show mass products stock outs
+        self.mass_products_stock_outs(
+            self.bot_cog.db_dict_smartphones,
+            self.channels_dict['all_phones_stocks'],
+            'smartphones'
+        )
+        self.mass_products_stock_outs(
+            self.bot_cog.db_dict_bikes,
+            self.channels_dict['all_bikes_stocks'],
+            'bikes'
+        )
+        self.print_log('sleep 5')
+        time.sleep(5)
 
-    def load_all_products_data(self):
-        # load smartphone database
-        page_count_smartphones = 1
-        self.db_dict_smartphones = {'products':[],'total_product_count':''}
-        # fetch all smartphones pages
-        while True:
-            url_smartphones = f'https://eorange.shop/get-products/Smartphone?type=category&page={page_count_smartphones}&filter=%7B%22short_by%22:%22popularity%22,%22seller_by%22:[],%22brand_by%22:[],%22price%22:%7B%22min%22:0,%22max%22:0%7D%7D'
-            self.print_log(f'fetching smartphone page {page_count_smartphones}...')
-            api_dict = requests.get(url_smartphones).json()
-            last_page = api_dict['data']['products']['last_page']
-            product_list = api_dict['data']['products']['data']
+    # def load_all_products_data(self):
+    #     # load smartphone database
+    #     page_count_smartphones = 1
+    #     self.db_dict_smartphones = {'products':[],'total_product_count':''}
+    #     # fetch all smartphones pages
+    #     while True:
+    #         url_smartphones = f'https://eorange.shop/get-products/Smartphone?type=category&page={page_count_smartphones}&filter=%7B%22short_by%22:%22popularity%22,%22seller_by%22:[],%22brand_by%22:[],%22price%22:%7B%22min%22:0,%22max%22:0%7D%7D'
+    #         self.print_log(f'fetching smartphone page {page_count_smartphones}...')
+    #         api_dict = requests.get(url_smartphones).json()
+    #         last_page = api_dict['data']['products']['last_page']
+    #         product_list = api_dict['data']['products']['data']
 
-            self.db_dict_smartphones['products'] += product_list
+    #         self.db_dict_smartphones['products'] += product_list
 
-            if page_count_smartphones == last_page:
-                self.db_dict_smartphones['total_product_count'] = api_dict['data']['products']['total']
-                break
-            page_count_smartphones += 1
-        # sort product list
-        self.db_dict_smartphones['products'] = sorted(self.db_dict_smartphones['products'], key=lambda k: k['name'])
+    #         if page_count_smartphones == last_page:
+    #             self.db_dict_smartphones['total_product_count'] = api_dict['data']['products']['total']
+    #             break
+    #         page_count_smartphones += 1
+    #     # sort product list
+    #     self.db_dict_smartphones['products'] = sorted(self.db_dict_smartphones['products'], key=lambda k: k['name'])
 
 
-        # load bike database
-        page_count_bikes = 1
-        self.db_dict_bikes = {'products':[],'total_product_count':''}
-        # fetch all bikes pages
-        while True:
-            url_bikes = f'https://eorange.shop/get-products/Motorcycle-Scooter?type=category&page={page_count_bikes}&filter=%7B%22short_by%22:%22popularity%22,%22seller_by%22:[],%22brand_by%22:[],%22price%22:%7B%22min%22:0,%22max%22:0%7D%7D'
-            self.print_log(f'fetching bike page {page_count_bikes}...')
-            api_dict = requests.get(url_bikes).json()
-            last_page = api_dict['data']['products']['last_page']
-            product_list = api_dict['data']['products']['data']
+    #     # load bike database
+    #     page_count_bikes = 1
+    #     self.db_dict_bikes = {'products':[],'total_product_count':''}
+    #     # fetch all bikes pages
+    #     while True:
+    #         url_bikes = f'https://eorange.shop/get-products/Motorcycle-Scooter?type=category&page={page_count_bikes}&filter=%7B%22short_by%22:%22popularity%22,%22seller_by%22:[],%22brand_by%22:[],%22price%22:%7B%22min%22:0,%22max%22:0%7D%7D'
+    #         self.print_log(f'fetching bike page {page_count_bikes}...')
+    #         api_dict = requests.get(url_bikes).json()
+    #         last_page = api_dict['data']['products']['last_page']
+    #         product_list = api_dict['data']['products']['data']
 
-            self.db_dict_bikes['products'] += product_list
+    #         self.db_dict_bikes['products'] += product_list
 
-            if page_count_bikes == last_page:
-                self.db_dict_bikes['total_product_count'] = api_dict['data']['products']['total']
-                break
-            page_count_bikes += 1
-        # sort product list
-        self.db_dict_bikes['products'] = sorted(self.db_dict_bikes['products'], key=lambda k: k['name'])
+    #         if page_count_bikes == last_page:
+    #             self.db_dict_bikes['total_product_count'] = api_dict['data']['products']['total']
+    #             break
+    #         page_count_bikes += 1
+    #     # sort product list
+    #     self.db_dict_bikes['products'] = sorted(self.db_dict_bikes['products'], key=lambda k: k['name'])
         
     def bot_send_embed(self, channel, fields, title='Title', desc='desc', colour=0xFF0000, timestamp=datetime.utcnow(), author_name='BDCG', footer='footer'):
         embed = Embed(title=title, description=desc,
@@ -97,65 +139,36 @@ class ConsoleApp:
         embed.set_footer(text=footer)
         asyncio.run_coroutine_threadsafe(channel.send(embed=embed), self.evt_loop)
 
-    def all_phones_stocks(self, channel):
+    def mass_products_stocks(self, db_dict_products, channel, product_name):
+        self.print_log(f'showing mass {product_name} stocks')
         in_stock = []
-        for product in self.db_dict_smartphones['products']:
-            if product['stock'] != 0:
+        for product in db_dict_products['products']:
+            if product['stock'] > 0:
                 product['name'] = product['name'][:13]+'..'
                 in_stock.append(product)
         return self.dic_to_table(in_stock, channel)
 
-    def all_bikes_stocks(self, channel):
-        in_stock = []
-        for product in self.db_dict_bikes['products']:
-            if product['stock'] != 0:
-                product['name'] = product['name'][:13]+'..'
-                in_stock.append(product)
-        return self.dic_to_table(in_stock, channel)
-
-    def all_phones_stock_outs(self, channel):
+    def mass_products_stock_outs(self, db_dict_products, channel, product_name):
+        self.print_log(f'showing mass {product_name} stocks')
         out_of_stock = []
-        for product in self.db_dict_smartphones['products']:
-            if product['stock'] == 0:
+        for product in db_dict_products['products']:
+            if product['stock'] <= 0:
                 product['name'] = product['name'][:13]+'..'
                 out_of_stock.append(product)
         return self.dic_to_table(out_of_stock, channel)       
-
-    def all_bikes_stock_outs(self, channel):
-        out_of_stock = []
-        for product in self.db_dict_bikes['products']:
-            if product['stock'] == 0:
-                product['name'] = product['name'][:13]+'..'
-                out_of_stock.append(product)
-        return self.dic_to_table(out_of_stock, channel)
-
-    def single_phone_stocks(self):
-        self.print_log('checking single phone stocks...')
+    
+    def single_product_stocks(self, product_name, db_dict_products_new, db_dict_products_old, channel):
+        self.print_log(f'checking single {product_name} stocks...')
         # find out instant stock modification
-        # load smartphone database
-        page_count_smartphones = 1
-        db_dict_smartphones_new = {'products':[],'total_product_count':''}
-        # fetch all smartphones pages
-        while True:
-            # url_smartphones = 'https://jsonbin.io/6064cd6418592d461f044c38/latest'
-            url_smartphones = f'https://eorange.shop/get-products/Smartphone?type=category&page={page_count_smartphones}&filter=%7B%22short_by%22:%22popularity%22,%22seller_by%22:[],%22brand_by%22:[],%22price%22:%7B%22min%22:0,%22max%22:0%7D%7D'
-            self.print_log(f'fetching smartphone page {page_count_smartphones}...')
-            api_dict = requests.get(url_smartphones).json()
-            last_page = api_dict['data']['products']['last_page']
-            product_list = api_dict['data']['products']['data']
+        # load product database
+        db_dict_products_new = db_dict_products_new
+        db_dict_products_old = db_dict_products_old
 
-            db_dict_smartphones_new['products'] += product_list
+        if not db_dict_products_old:
+            db_dict_products_old = db_dict_products_new
 
-            if page_count_smartphones == last_page:
-                db_dict_smartphones_new['total_product_count'] = api_dict['data']['products']['total']
-                break
-            page_count_smartphones += 1
-        # sort product list
-        db_dict_smartphones_new['products'] = sorted(db_dict_smartphones_new['products'], key=lambda k: k['name'])
-
-        # products_stocked_in = [] # not in use
-        # products_stocked_out = [] # not in use
-        pairs = zip(self.db_dict_smartphones['products'], db_dict_smartphones_new['products'])
+        pairs = zip(db_dict_products_old['products'], db_dict_products_new['products'])
+        # pairs = zip(db_dict_products_old['data'], db_dict_products_new['data'])
 
         for i,j in pairs:
             if i['name'] == j['name']:
@@ -171,71 +184,72 @@ class ConsoleApp:
                         self.print_log('product stocked out')
                         # products_stocked_out.append(j)
                         fields = [("Stocks", j['stock'], True), ('Price', j['price'], True),]
-                        self.bot_send_embed(self.channels_dict['single_phone_stocks'], fields, j['name'], author_name='Stocked Out!', colour=0xFF0000)
+                        self.bot_send_embed(channel, fields, j['name'], author_name='Stocked Out!', colour=0xFF0000)
                     elif j['stock'] != 0 and i['stock'] == 0:
                         # product stocked in
                         self.print_log('product stocked in')
                         # products_stocked_in.append(j)
                         fields = [("Stocks", j['stock'], True), ('Price', j['price'], True),]
-                        self.bot_send_embed(self.channels_dict['single_phone_stocks'], fields, j['name'], author_name='Stocked In!', colour=0x00FF00)
+                        self.bot_send_embed(channel, fields, j['name'], author_name='Stocked In!', colour=0x00FF00)
                 else:
                     self.print_log('stock data unmodified')
             else:
                 # product name didn't match
                 self.print_log('product name did not match')
-        self.db_dict_smartphones = db_dict_smartphones_new.copy()
+                input('product name did not match')
+        return db_dict_products_new
 
-    def single_bike_stocks(self):
-        self.print_log('checking single bike stocks...')
-        # find out instant stock modification
-        # load bike database
-        page_count_bikes = 1
-        db_dict_bikes_new = {'products':[],'total_product_count':''}
-        # fetch all bikes pages
-        while True:
-            # url_bikes = 'https://jsonbin.io/6064cccf18592d461f044bd6/latest'
-            url_bikes = f'https://eorange.shop/get-products/Motorcycle-Scooter?type=category&page={page_count_bikes}&filter=%7B%22short_by%22:%22popularity%22,%22seller_by%22:[],%22brand_by%22:[],%22price%22:%7B%22min%22:0,%22max%22:0%7D%7D'
-            self.print_log(f'fetching bike page {page_count_bikes}...')
-            api_dict = requests.get(url_bikes).json()
-            last_page = api_dict['data']['products']['last_page']
-            product_list = api_dict['data']['products']['data']
+    # def single_bike_stocks(self):
+    #     self.print_log('checking single bike stocks...')
+    #     # find out instant stock modification
+    #     # load bike database
+    #     page_count_bikes = 1
+    #     db_dict_bikes_new = {'products':[],'total_product_count':''}
+    #     # fetch all bikes pages
+    #     while True:
+    #         # url_bikes = 'https://jsonbin.io/6064cccf18592d461f044bd6/latest'
+    #         url_bikes = f'https://eorange.shop/get-products/Motorcycle-Scooter?type=category&page={page_count_bikes}&filter=%7B%22short_by%22:%22popularity%22,%22seller_by%22:[],%22brand_by%22:[],%22price%22:%7B%22min%22:0,%22max%22:0%7D%7D'
+    #         self.print_log(f'fetching bike page {page_count_bikes}...')
+    #         api_dict = requests.get(url_bikes).json()
+    #         last_page = api_dict['data']['products']['last_page']
+    #         product_list = api_dict['data']['products']['data']
 
-            db_dict_bikes_new['products'] += product_list
+    #         db_dict_bikes_new['products'] += product_list
 
-            if page_count_bikes == last_page:
-                db_dict_bikes_new['total_product_count'] = api_dict['data']['products']['total']
-                break
-            page_count_bikes += 1
-        # sort product list
-        db_dict_bikes_new['products'] = sorted(db_dict_bikes_new['products'], key=lambda k: k['name'])
+    #         if page_count_bikes == last_page:
+    #             db_dict_bikes_new['total_product_count'] = api_dict['data']['products']['total']
+    #             break
+    #         page_count_bikes += 1
+    #     # sort product list
+    #     db_dict_bikes_new['products'] = sorted(db_dict_bikes_new['products'], key=lambda k: k['name'])
 
-        # products_stocked_in = [] # not in use
-        # products_stocked_out = [] # not in use
-        pairs = zip(self.db_dict_bikes['products'], db_dict_bikes_new['products'])
+    #     # products_stocked_in = [] # not in use
+    #     # products_stocked_out = [] # not in use
+    #     pairs = zip(self.db_dict_bikes['products'], db_dict_bikes_new['products'])
 
-        for i,j in pairs:
-            if i['name'] == j['name']:
-                # product name matched
-                self.print_log('product name matched')
-                if i['stock'] != j['stock']:
-                    # stock data modified
-                    self.print_log('stock data modified')
-                    if j['stock'] == 0:
-                        # product stocked out
-                        self.print_log('product stocked out')
-                        # products_stocked_out.append(j)
-                        fields = [("Stocks", j['stock'], True), ('Price', j['price'], True),]
-                        self.bot_send_embed(self.channels_dict['single_bike_stocks'], fields, j['name'], author_name='Stocked Out!', colour=0xFF0000)
-                    elif j['stock'] != 0 and i['stock'] == 0:
-                        # product stocked in
-                        self.print_log('product stocked in')
-                        # products_stocked_in.append(j)
-                        fields = [("Stocks", j['stock'], True), ('Price', j['price'], True),]
-                        self.bot_send_embed(self.channels_dict['single_bike_stocks'], fields, j['name'], author_name='Stocked In!', colour=0x00FF00)
-            else:
-                # product name didn't match
-                self.print_log('product name did not match')
-        self.db_dict_bikes = db_dict_bikes_new.copy()
+    #     for i,j in pairs:
+    #         if i['name'] == j['name']:
+    #             # product name matched
+    #             self.print_log('product name matched')
+    #             if i['stock'] != j['stock']:
+    #                 # stock data modified
+    #                 self.print_log('stock data modified')
+    #                 if j['stock'] == 0:
+    #                     # product stocked out
+    #                     self.print_log('product stocked out')
+    #                     # products_stocked_out.append(j)
+    #                     fields = [("Stocks", j['stock'], True), ('Price', j['price'], True),]
+    #                     self.bot_send_embed(self.channels_dict['single_bike_stocks'], fields, j['name'], author_name='Stocked Out!', colour=0xFF0000)
+    #                 elif j['stock'] != 0 and i['stock'] == 0:
+    #                     # product stocked in
+    #                     self.print_log('product stocked in')
+    #                     # products_stocked_in.append(j)
+    #                     fields = [("Stocks", j['stock'], True), ('Price', j['price'], True),]
+    #                     self.bot_send_embed(self.channels_dict['single_bike_stocks'], fields, j['name'], author_name='Stocked In!', colour=0x00FF00)
+    #         else:
+    #             # product name didn't match
+    #             self.print_log('product name did not match')
+    #     self.db_dict_bikes = db_dict_bikes_new.copy()
 
     def dic_to_table(self, dic, channel):
         timestamp = f"```\n\n\nUpdated On --> {datetime.now().strftime('%d/%m/%y >> %-I:%M:%S %p')}```"
@@ -271,7 +285,7 @@ class ConsoleApp:
 
     def bot_log(self, msg, channel):
         # await channel.send('Test') # We can't do this because of the above comment
-        asyncio.run_coroutine_threadsafe(self.dc_bot.send_log(msg, channel), self.evt_loop)
+        asyncio.run_coroutine_threadsafe(self.bot_cog.send_log(msg, channel), self.evt_loop)
 
     def print_log(self, msg):
         print(msg)
@@ -283,8 +297,113 @@ class MyCog(Cog):
         self.bg_task =  bg_task
         self.req = {}
         self.evt_exit_thread = threading.Event()
+        self.t_lock = threading.Lock()
+        self.db_dict_smartphones = {'products':[],'total_product_count':''}
+        self.db_dict_bikes = {'products':[],'total_product_count':''}
 
-    def reqq(self, evt_loop):
+    @command(name='11')
+    async def cmd_load_all_products_data(self, ctx):
+        self.print_log('triggered --> cmd_load_all_products_data()')
+        await ctx.send('command granted')
+        t = threading.Thread(target=self.load_all_products_data)
+        t.start()
+
+    @command(name='10')
+    async def cmd_kill_load_all_products_data(self, ctx):
+        self.print_log('triggered --> cmd_kill_load_all_products_data')
+        await ctx.send('command granted')
+        self.evt_exit_thread.set()
+
+    @command(name='21')
+    async def cmd_run_console_app(self, ctx):
+        self.print_log('triggered --> cmd_run_console_app()')
+        await ctx.send('command granted')
+        self.blocker_background_task()
+
+    @command(name='20')
+    async def cmd_kill_console_app(self, ctx):
+        self.print_log('triggered --> cmd_kill_console_app')
+        await ctx.send('command granted')
+        self.evt_exit_thread.set()
+
+
+    def load_all_products_data(self):
+        while True:
+            if self.evt_exit_thread.is_set():
+                break
+                self.print_log('thread killed')
+            # # load smartphones db
+            # self.load_product_db(
+            #     'https://eorange.shop/get-products/Smartphone?type=category&page=',
+            #     '&filter=%7B%22short_by%22:%22popularity%22,%22seller_by%22:[],%22brand_by%22:[],%22price%22:%7B%22min%22:0,%22max%22:0%7D%7D',
+            #     self.db_dict_smartphones,
+            #     'smartphone'
+            # )
+            # # load bikes db
+            # print('sleeping 5 sec')
+            # time.sleep(5)
+            # self.load_product_db(
+            #     'https://eorange.shop/get-products/Motorcycle-Scooter?type=category&page=',
+            #     '&filter=%7B%22short_by%22:%22popularity%22,%22seller_by%22:[],%22brand_by%22:[],%22price%22:%7B%22min%22:0,%22max%22:0%7D%7D',
+            #     self.db_dict_bikes,
+            #     'bike'
+            # )
+            # print('sleeping 5 sec')
+            # time.sleep(5)
+            print('fetching test db')
+            self.db_dict_smartphones_test = requests.get('https://api.jsonbin.io/b/6065ca51861c8e2b6a82deef/latest').json()['data']['products']
+            print('sleep 5')
+            time.sleep(5)
+    def load_product_db(self, api_url_first, api_url_last, db_dict, product_name):
+        # load product database
+        page_count = 1
+        
+        local_db_dict = {'products':[],'total_product_count':''}
+        # fetch all product pages
+        while True:
+            self.print_log(f'fetching {product_name} page {page_count}...')
+            url_smartphones = api_url_first+str(page_count)+api_url_last
+            api_dict = requests.get(url_smartphones).json()
+            last_page = api_dict['data']['products']['last_page']
+            product_list = api_dict['data']['products']['data']
+
+            local_db_dict['products'] += product_list
+            
+
+            if page_count == last_page:
+                local_db_dict['total_product_count'] = api_dict['data']['products']['total']
+                break
+            page_count += 1
+        # sort product list
+        local_db_dict['products'] = sorted(local_db_dict['products'], key=lambda k: k['name'])
+        # saved processed data to main db
+        db_dict['products'] = local_db_dict['products']
+        db_dict['total_product_count'] = local_db_dict['total_product_count']
+    
+
+    @command(name='00')
+    async def cmd_test(self, ctx):
+        t = threading.Thread(
+            target=self.test,
+            args=(asyncio.get_event_loop(),)
+        )
+        t.start()
+
+    def test(self, evt_loop):
+        print(self.db_dict_smartphones['products'][0]['name'])
+        # input('inp')
+
+
+
+    @command(name='00')
+    async def cmd_test(self, ctx):
+        t = threading.Thread(
+            target=self.test_func_sync,
+            args=(asyncio.get_event_loop(),)
+        )
+        t.start()
+    
+    def test_func_sync(self, evt_loop):
         while True:
             if self.evt_exit_thread.is_set():
                 self.evt_exit_thread.clear()
@@ -296,31 +415,19 @@ class MyCog(Cog):
             # await asyncio.sleep(5)
             asyncio.run_coroutine_threadsafe(self.send_log('end loop', self.bot.channels_dict['robot_commands']), evt_loop)
             time.sleep(10)
-
-
-    @command()
-    async def r(self, ctx):
-        threading.Thread(
-            target=self.reqq,
-            args=(asyncio.get_event_loop(),)
-        ).start()
     
-    @command()
-    async def rk(self, ctx):
-        self.evt_exit_thread.set()
-        await ctx.send('command granted')
-
-
-    @command()
-    async def s(self, ctx):
-        await self.bot.channels_dict['robot_commands'].send(f'new command\n\n{self.req}')
-
 
     @Cog.listener()
     async def on_ready(self):
         print("MyCog is ready")
+        # await self.cmd_load_all_products_data(None)
+        # input('start func')
+        # self.test_run('iphone')
+        # input('end func')
 
-        ### self.blocker_background_task()
+        
+    def send_log_async(self, msg, channel):
+        asyncio.run_coroutine_threadsafe(self.send_log(msg, channel), asyncio.get_event_loop())
 
     async def send_log(self, msg, channel):
         print(msg, datetime.now().isoformat(), '\n\n')
@@ -339,6 +446,464 @@ class MyCog(Cog):
     def bot_log(self, msg, channel):
         # await channel.send('Test') # We can't do this because of the above comment
         asyncio.run_coroutine_threadsafe(self.send_log(msg, channel), self.evt_loop)
+
+    ########################################## Commands ##############################################
+    ##################################################################################################
+    ######################################### Smartphones ############################################
+
+    @command(name='nokia')
+    async def cmd_nokia_stock(self, ctx, product_name='nokia'):
+        db_product_list = self.db_dict_smartphones['products']
+        products = []
+        
+        for i in db_product_list:
+            if product_name in i['name'].lower() and i['stock'] > 0:
+                i['name'] = i['name'][:13]+'..'
+                products.append(i)
+        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+    
+    @command(name='onokia')
+    async def cmd_nokia_stock_out(self, ctx, product_name='nokia'):
+        db_product_list = self.db_dict_smartphones['products']
+        products = []
+        
+        for i in db_product_list:
+            if product_name in i['name'].lower() and i['stock'] <= 0:
+                i['name'] = i['name'][:13]+'..'
+                products.append(i)
+        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+
+    @command(name='samsung')
+    async def cmd_samsung_stock(self, ctx, product_name='samsung'):
+        db_product_list = self.db_dict_smartphones['products']
+        products = []
+        
+        for i in db_product_list:
+            if product_name in i['name'].lower() and i['stock'] > 0:
+                i['name'] = i['name'][:13]+'..'
+                products.append(i)
+        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+    
+    @command(name='osamsung')
+    async def cmd_samsung_stock_out(self, ctx, product_name='samsung'):
+        db_product_list = self.db_dict_smartphones['products']
+        products = []
+        
+        for i in db_product_list:
+            if product_name in i['name'].lower() and i['stock'] <= 0:
+                i['name'] = i['name'][:13]+'..'
+                products.append(i)
+        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+
+    @command(name='realme')
+    async def cmd_realme_stock(self, ctx, product_name='realme'):
+        db_product_list = self.db_dict_smartphones['products']
+        products = []
+        
+        for i in db_product_list:
+            if product_name in i['name'].lower() and i['stock'] > 0:
+                i['name'] = i['name'][:13]+'..'
+                products.append(i)
+        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+    
+    @command(name='orealme')
+    async def cmd_realme_stock_out(self, ctx, product_name='realme'):
+        db_product_list = self.db_dict_smartphones['products']
+        products = []
+        
+        for i in db_product_list:
+            if product_name in i['name'].lower() and i['stock'] <= 0:
+                i['name'] = i['name'][:13]+'..'
+                products.append(i)
+        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+
+    @command(name='xiaomi')
+    async def cmd_xiaomi_stock(self, ctx, product_name='xiaomi'):
+        db_product_list = self.db_dict_smartphones['products']
+        products = []
+        
+        for i in db_product_list:
+            if product_name in i['name'].lower() and i['stock'] > 0:
+                i['name'] = i['name'][:13]+'..'
+                products.append(i)
+        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+    
+    @command(name='oxiaomi')
+    async def cmd_xiaomi_stock_out(self, ctx, product_name='xiaomi'):
+        db_product_list = self.db_dict_smartphones['products']
+        products = []
+        
+        for i in db_product_list:
+            if product_name in i['name'].lower() and i['stock'] <= 0:
+                i['name'] = i['name'][:13]+'..'
+                products.append(i)
+        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+
+    @command(name='iphone')
+    async def cmd_iphone_stock(self, ctx, product_name='iphone'):
+        db_product_list = self.db_dict_smartphones['products']
+        products = []
+        
+        for i in db_product_list:
+            if product_name in i['name'].lower() and i['stock'] > 0:
+                i['name'] = i['name'][:13]+'..'
+                products.append(i)
+        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+    
+    @command(name='oiphone')
+    async def cmd_iphone_stock_out(self, ctx, product_name='iphone'):
+        db_product_list = self.db_dict_smartphones['products']
+        products = []
+        
+        for i in db_product_list:
+            if product_name in i['name'].lower() and i['stock'] <= 0:
+                i['name'] = i['name'][:13]+'..'
+                products.append(i)
+        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+
+    @command(name='vivo')
+    async def cmd_vivo_stock(self, ctx, product_name='vivo'):
+        db_product_list = self.db_dict_smartphones['products']
+        products = []
+        
+        for i in db_product_list:
+            if product_name in i['name'].lower() and i['stock'] > 0:
+                i['name'] = i['name'][:13]+'..'
+                products.append(i)
+        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+    
+    @command(name='ovivo')
+    async def cmd_vivo_stock_out(self, ctx, product_name='vivo'):
+        db_product_list = self.db_dict_smartphones['products']
+        products = []
+        
+        for i in db_product_list:
+            if product_name in i['name'].lower() and i['stock'] <= 0:
+                i['name'] = i['name'][:13]+'..'
+                products.append(i)
+        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+
+    @command(name='oppo')
+    async def cmd_oppo_stock(self, ctx, product_name='oppo'):
+        db_product_list = self.db_dict_smartphones['products']
+        products = []
+        
+        for i in db_product_list:
+            if product_name in i['name'].lower() and i['stock'] > 0:
+                i['name'] = i['name'][:13]+'..'
+                products.append(i)
+        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+    
+    @command(name='ooppo')
+    async def cmd_oppo_stock_out(self, ctx, product_name='oppo'):
+        db_product_list = self.db_dict_smartphones['products']
+        products = []
+        
+        for i in db_product_list:
+            if product_name in i['name'].lower() and i['stock'] <= 0:
+                i['name'] = i['name'][:13]+'..'
+                products.append(i)
+        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+
+    @command(name='poco')
+    async def cmd_poco_stock(self, ctx, product_name='poco'):
+        db_product_list = self.db_dict_smartphones['products']
+        products = []
+        
+        for i in db_product_list:
+            if product_name in i['name'].lower() and i['stock'] > 0:
+                i['name'] = i['name'][:13]+'..'
+                products.append(i)
+        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+    
+    @command(name='opoco')
+    async def cmd_poco_stock_out(self, ctx, product_name='poco'):
+        db_product_list = self.db_dict_smartphones['products']
+        products = []
+        
+        for i in db_product_list:
+            if product_name in i['name'].lower() and i['stock'] <= 0:
+                i['name'] = i['name'][:13]+'..'
+                products.append(i)
+        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+
+    @command(name='symphony')
+    async def cmd_symphony_stock(self, ctx, product_name='symphony'):
+        db_product_list = self.db_dict_smartphones['products']
+        products = []
+        
+        for i in db_product_list:
+            if product_name in i['name'].lower() and i['stock'] > 0:
+                i['name'] = i['name'][:13]+'..'
+                products.append(i)
+        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+    
+    @command(name='osymphony')
+    async def cmd_symphony_stock_out(self, ctx, product_name='symphony'):
+        db_product_list = self.db_dict_smartphones['products']
+        products = []
+        
+        for i in db_product_list:
+            if product_name in i['name'].lower() and i['stock'] <= 0:
+                i['name'] = i['name'][:13]+'..'
+                products.append(i)
+        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+
+    @command(name='huawei')
+    async def cmd_huawei_stock(self, ctx, product_name='huawei'):
+        db_product_list = self.db_dict_smartphones['products']
+        products = []
+        
+        for i in db_product_list:
+            if product_name in i['name'].lower() and i['stock'] > 0:
+                i['name'] = i['name'][:13]+'..'
+                products.append(i)
+        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+    
+    @command(name='ohuawei')
+    async def cmd_huawei_stock_out(self, ctx, product_name='huawei'):
+        db_product_list = self.db_dict_smartphones['products']
+        products = []
+        
+        for i in db_product_list:
+            if product_name in i['name'].lower() and i['stock'] <= 0:
+                i['name'] = i['name'][:13]+'..'
+                products.append(i)
+        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+
+    @command(name='maximus')
+    async def cmd_maximus_stock(self, ctx, product_name='maximus'):
+        db_product_list = self.db_dict_smartphones['products']
+        products = []
+        
+        for i in db_product_list:
+            if product_name in i['name'].lower() and i['stock'] > 0:
+                i['name'] = i['name'][:13]+'..'
+                products.append(i)
+        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+    
+    @command(name='omaximus')
+    async def cmd_maximus_stock_out(self, ctx, product_name='maximus'):
+        db_product_list = self.db_dict_smartphones['products']
+        products = []
+        
+        for i in db_product_list:
+            if product_name in i['name'].lower() and i['stock'] <= 0:
+                i['name'] = i['name'][:13]+'..'
+                products.append(i)
+        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+
+    @command(name='walton')
+    async def cmd_walton_stock(self, ctx, product_name='walton'):
+        db_product_list = self.db_dict_smartphones['products']
+        products = []
+        
+        for i in db_product_list:
+            if product_name in i['name'].lower() and i['stock'] > 0:
+                i['name'] = i['name'][:13]+'..'
+                products.append(i)
+        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+    
+    @command(name='owalton')
+    async def cmd_walton_stock_out(self, ctx, product_name='walton'):
+        db_product_list = self.db_dict_smartphones['products']
+        products = []
+        
+        for i in db_product_list:
+            if product_name in i['name'].lower() and i['stock'] <= 0:
+                i['name'] = i['name'][:13]+'..'
+                products.append(i)
+        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+    #####################################################################################################
+    ########################################### bikes ###################################################
+    @command(name='bajaj')
+    async def cmd_bajaj_stock(self, ctx, product_name='bajaj'):
+        db_product_list = self.db_dict_bikes['products']
+        products = []
+        
+        for i in db_product_list:
+            if product_name in i['name'].lower() and i['stock'] > 0:
+                i['name'] = i['name'][:13]+'..'
+                products.append(i)
+        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+    
+    @command(name='obajaj')
+    async def cmd_bajaj_stock_out(self, ctx, product_name='bajaj'):
+        db_product_list = self.db_dict_bikes['products']
+        products = []
+        
+        for i in db_product_list:
+            if product_name in i['name'].lower() and i['stock'] <= 0:
+                i['name'] = i['name'][:13]+'..'
+                products.append(i)
+        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+
+    @command(name='yamaha')
+    async def cmd_yamaha_stock(self, ctx, product_name='yamaha'):
+        db_product_list = self.db_dict_bikes['products']
+        products = []
+        
+        for i in db_product_list:
+            if product_name in i['name'].lower() and i['stock'] > 0:
+                i['name'] = i['name'][:13]+'..'
+                products.append(i)
+        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+    
+    @command(name='oyamaha')
+    async def cmd_yamaha_stock_out(self, ctx, product_name='yamaha'):
+        db_product_list = self.db_dict_bikes['products']
+        products = []
+        
+        for i in db_product_list:
+            if product_name in i['name'].lower() and i['stock'] <= 0:
+                i['name'] = i['name'][:13]+'..'
+                products.append(i)
+        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+
+    @command(name='honda')
+    async def cmd_honda_stock(self, ctx, product_name='honda'):
+        db_product_list = self.db_dict_bikes['products']
+        products = []
+        
+        for i in db_product_list:
+            if product_name in i['name'].lower() and i['stock'] > 0:
+                i['name'] = i['name'][:13]+'..'
+                products.append(i)
+        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+    
+    @command(name='ohonda')
+    async def cmd_honda_stock_out(self, ctx, product_name='honda'):
+        db_product_list = self.db_dict_bikes['products']
+        products = []
+        
+        for i in db_product_list:
+            if product_name in i['name'].lower() and i['stock'] <= 0:
+                i['name'] = i['name'][:13]+'..'
+                products.append(i)
+        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+
+    @command(name='tvs')
+    async def cmd_tvs_stock(self, ctx, product_name='tvs'):
+        db_product_list = self.db_dict_bikes['products']
+        products = []
+        
+        for i in db_product_list:
+            if product_name in i['name'].lower() and i['stock'] > 0:
+                i['name'] = i['name'][:13]+'..'
+                products.append(i)
+        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+    
+    @command(name='otvs')
+    async def cmd_tvs_stock_out(self, ctx, product_name='tvs'):
+        db_product_list = self.db_dict_bikes['products']
+        products = []
+        
+        for i in db_product_list:
+            if product_name in i['name'].lower() and i['stock'] <= 0:
+                i['name'] = i['name'][:13]+'..'
+                products.append(i)
+        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+
+    @command(name='hero')
+    async def cmd_hero_stock(self, ctx, product_name='hero'):
+        db_product_list = self.db_dict_bikes['products']
+        products = []
+        
+        for i in db_product_list:
+            if product_name in i['name'].lower() and i['stock'] > 0:
+                i['name'] = i['name'][:13]+'..'
+                products.append(i)
+        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+    
+    @command(name='ohero')
+    async def cmd_hero_stock_out(self, ctx, product_name='hero'):
+        db_product_list = self.db_dict_bikes['products']
+        products = []
+        
+        for i in db_product_list:
+            if product_name in i['name'].lower() and i['stock'] <= 0:
+                i['name'] = i['name'][:13]+'..'
+                products.append(i)
+        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+
+    @command(name='lifan')
+    async def cmd_lifan_stock(self, ctx, product_name='lifan'):
+        db_product_list = self.db_dict_bikes['products']
+        products = []
+        
+        for i in db_product_list:
+            if product_name in i['name'].lower() and i['stock'] > 0:
+                i['name'] = i['name'][:13]+'..'
+                products.append(i)
+        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+    
+    @command(name='olifan')
+    async def cmd_lifan_stock_out(self, ctx, product_name='lifan'):
+        db_product_list = self.db_dict_bikes['products']
+        products = []
+        
+        for i in db_product_list:
+            if product_name in i['name'].lower() and i['stock'] <= 0:
+                i['name'] = i['name'][:13]+'..'
+                products.append(i)
+        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+
+    @command(name='runner')
+    async def cmd_runner_stock(self, ctx, product_name='runner'):
+        db_product_list = self.db_dict_bikes['products']
+        products = []
+        
+        for i in db_product_list:
+            if product_name in i['name'].lower() and i['stock'] > 0:
+                i['name'] = i['name'][:13]+'..'
+                products.append(i)
+        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+    
+    @command(name='orunner')
+    async def cmd_runner_stock_out(self, ctx, product_name='runner'):
+        db_product_list = self.db_dict_bikes['products']
+        products = []
+        
+        for i in db_product_list:
+            if product_name in i['name'].lower() and i['stock'] <= 0:
+                i['name'] = i['name'][:13]+'..'
+                products.append(i)
+        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+
+    #####################################################################################################
+    #####################################################################################################
+
+    def dict_to_table(self, dic, channel):
+        timestamp = f"```\n\n\nUpdated On --> {datetime.now().strftime('%d/%m/%y >> %-I:%M:%S %p')}```"
+        df=pd.DataFrame(dic, columns=['name', 'stock', 'price'])
+        df.index += 1
+        df_idx_len = len(df.index)
+        if df_idx_len <= 15:
+            styled_table = '```'+tabulate(df, headers=['Products', 'Stocks', 'Prices'], tablefmt='fancy_grid')+'```'
+            self.send_log_async(timestamp, channel)
+            self.send_log_async(styled_table, channel)
+        else:
+            idx_row_start = 0
+            idx_row_end = 0
+            # if df_idx_len > 16:
+            is_first_loop = True
+            while df_idx_len > 15:
+                idx_row_end += 15
+                if is_first_loop:
+                    styled_table = '```'+tabulate(df.iloc[idx_row_start:idx_row_end], headers=['Products', 'Stocks', 'Prices'], tablefmt='fancy_grid')+'```'
+                    idx_row_start += 15
+                    df_idx_len -= 15
+                    is_first_loop = False
+                    self.send_log_async(timestamp, channel)
+                    self.send_log_async(styled_table, channel)
+                else:
+                    time.sleep(5)
+                    styled_table = '```'+tabulate(df.iloc[idx_row_start:idx_row_end], tablefmt='fancy_grid')+'```'
+                    idx_row_start += 15
+                    df_idx_len -= 15
+                    self.send_log_async(styled_table, channel)
+            styled_table = '```'+tabulate(df.iloc[idx_row_end:], tablefmt='fancy_grid')+'```'
+            self.send_log_async(styled_table, channel)
 
 
 class DiscordBot(commands.Bot):
@@ -407,4 +972,5 @@ if __name__ == "__main__":
 
 ### useful links
 # concept of sending discord message from background task >> https://stackoverflow.com/a/64370097
+# concept of using await object out of async funtion >> https://stackoverflow.com/a/53726266
 # concept of killing threads gracefully >> https://blog.miguelgrinberg.com/post/how-to-kill-a-python-thread
