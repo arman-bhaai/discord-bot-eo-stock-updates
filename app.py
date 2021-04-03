@@ -21,9 +21,9 @@ from dotenv import load_dotenv
 
 
 class ConsoleApp:
-    def __init__(self, bot_cog, evt_loop, channels_dict, kwargs):
+    def __init__(self, bot_cog, evt_loop, dict_channels, kwargs):
         self.evt_loop = evt_loop
-        self.channels_dict = channels_dict
+        self.dict_channels = dict_channels
         self.bot_cog = bot_cog
         self.kwargs = kwargs
         self.print_log('running ConsoleApp')
@@ -36,97 +36,63 @@ class ConsoleApp:
         # while True:
         #     self.loop_all_products()
         while True:
-            # display single smartphone stocks
-            db_dict_products_new = self.single_product_stocks(
-                'smartphone',
-                self.bot_cog.db_dict_smartphones,
-                self.db_dict_smartphones_old,
-                self.channels_dict['single_phone_stocks']
-            )
-            self.print_log('substituting old smartphone db with recent db')
-            self.db_dict_smartphones_old = db_dict_products_new
-            print('sleep 5 sec sing product stock')
-
-            # display single bike stocks
-            db_dict_products_new = self.single_product_stocks(
-                'bike',
-                self.bot_cog.db_dict_bikes,
-                self.db_dict_bikes_old,
-                self.channels_dict['single_bike_stocks']
-            )
-            self.print_log('substituting old bike db with recent db')
-            self.db_dict_smartphones_old = db_dict_products_new
-            print('sleep 5 sec sing product stock')
-            time.sleep(5)
+            if self.bot_cog.evt_exit_th2.is_set():
+                self.bot_cog.evt_exit_th2.clear()
+                self.print_log('th2 killed')
+            
+            self.loop_all_products()
+            self.bot_cog.dict_futures = self.bot_cog.tp_exec.submit(self.loop_single_products)
 
             
     def loop_all_products(self):
         # show mass products stocks
         self.mass_products_stocks(
             self.bot_cog.db_dict_smartphones,
-            self.channels_dict['all_phones_stocks'],
+            self.dict_channels['all_phones_stocks'],
             'smartphones'
         )
         self.mass_products_stocks(
             self.bot_cog.db_dict_smartphones,
-            self.channels_dict['all_bikes_stocks'],
+            self.dict_channels['all_bikes_stocks'],
             'bikes'
         )
-        # show mass products stock outs
+        # show mass products stockouts
         self.mass_products_stock_outs(
             self.bot_cog.db_dict_smartphones,
-            self.channels_dict['all_phones_stocks'],
+            self.dict_channels['all_phones_stock_outs'],
             'smartphones'
         )
         self.mass_products_stock_outs(
             self.bot_cog.db_dict_bikes,
-            self.channels_dict['all_bikes_stocks'],
+            self.dict_channels['all_bikes_stock_outs'],
             'bikes'
         )
         self.print_log('sleep 5')
         time.sleep(5)
 
-    # def load_all_products_data(self):
-    #     # load smartphone database
-    #     page_count_smartphones = 1
-    #     self.db_dict_smartphones = {'products':[],'total_product_count':''}
-    #     # fetch all smartphones pages
-    #     while True:
-    #         url_smartphones = f'https://eorange.shop/get-products/Smartphone?type=category&page={page_count_smartphones}&filter=%7B%22short_by%22:%22popularity%22,%22seller_by%22:[],%22brand_by%22:[],%22price%22:%7B%22min%22:0,%22max%22:0%7D%7D'
-    #         self.print_log(f'fetching smartphone page {page_count_smartphones}...')
-    #         api_dict = requests.get(url_smartphones).json()
-    #         last_page = api_dict['data']['products']['last_page']
-    #         product_list = api_dict['data']['products']['data']
+    def loop_single_products(self):
+        # display single smartphone stocks
+        db_dict_products_new = self.single_product_stocks(
+            'smartphone',
+            self.bot_cog.db_dict_smartphones,
+            self.db_dict_smartphones_old,
+            self.dict_channels['single_phone_stocks']
+        )
+        self.print_log('substituting old smartphone db with recent db')
+        self.db_dict_smartphones_old = db_dict_products_new
+        print('sleep 5 sec sing product stock')
 
-    #         self.db_dict_smartphones['products'] += product_list
-
-    #         if page_count_smartphones == last_page:
-    #             self.db_dict_smartphones['total_product_count'] = api_dict['data']['products']['total']
-    #             break
-    #         page_count_smartphones += 1
-    #     # sort product list
-    #     self.db_dict_smartphones['products'] = sorted(self.db_dict_smartphones['products'], key=lambda k: k['name'])
-
-
-    #     # load bike database
-    #     page_count_bikes = 1
-    #     self.db_dict_bikes = {'products':[],'total_product_count':''}
-    #     # fetch all bikes pages
-    #     while True:
-    #         url_bikes = f'https://eorange.shop/get-products/Motorcycle-Scooter?type=category&page={page_count_bikes}&filter=%7B%22short_by%22:%22popularity%22,%22seller_by%22:[],%22brand_by%22:[],%22price%22:%7B%22min%22:0,%22max%22:0%7D%7D'
-    #         self.print_log(f'fetching bike page {page_count_bikes}...')
-    #         api_dict = requests.get(url_bikes).json()
-    #         last_page = api_dict['data']['products']['last_page']
-    #         product_list = api_dict['data']['products']['data']
-
-    #         self.db_dict_bikes['products'] += product_list
-
-    #         if page_count_bikes == last_page:
-    #             self.db_dict_bikes['total_product_count'] = api_dict['data']['products']['total']
-    #             break
-    #         page_count_bikes += 1
-    #     # sort product list
-    #     self.db_dict_bikes['products'] = sorted(self.db_dict_bikes['products'], key=lambda k: k['name'])
+        # display single bike stocks
+        db_dict_products_new = self.single_product_stocks(
+            'bike',
+            self.bot_cog.db_dict_bikes,
+            self.db_dict_bikes_old,
+            self.dict_channels['single_bike_stocks']
+        )
+        self.print_log('substituting old bike db with recent db')
+        self.db_dict_smartphones_old = db_dict_products_new
+        print('sleep 5 sec sing product stock')
+        time.sleep(5)
         
     def bot_send_embed(self, channel, fields, title='Title', desc='desc', colour=0xFF0000, timestamp=datetime.utcnow(), author_name='BDCG', footer='footer'):
         embed = Embed(title=title, description=desc,
@@ -175,7 +141,7 @@ class ConsoleApp:
                 # product name matched
                 self.print_log('product name matched')
                 # fields = [("Stocks", j['stock'], True), ('Price', j['price'], True),]
-                # self.bot_send_embed(self.channels_dict['single_phone_stocks'], fields, j['name'], author_name='Testtttt', colour=0xFF0000)
+                # self.bot_send_embed(self.dict_channels['single_phone_stocks'], fields, j['name'], author_name='Testtttt', colour=0xFF0000)
                 if i['stock'] != j['stock']:
                     # stock data modified
                     self.print_log('stock data modified')
@@ -199,58 +165,6 @@ class ConsoleApp:
                 input('product name did not match')
         return db_dict_products_new
 
-    # def single_bike_stocks(self):
-    #     self.print_log('checking single bike stocks...')
-    #     # find out instant stock modification
-    #     # load bike database
-    #     page_count_bikes = 1
-    #     db_dict_bikes_new = {'products':[],'total_product_count':''}
-    #     # fetch all bikes pages
-    #     while True:
-    #         # url_bikes = 'https://jsonbin.io/6064cccf18592d461f044bd6/latest'
-    #         url_bikes = f'https://eorange.shop/get-products/Motorcycle-Scooter?type=category&page={page_count_bikes}&filter=%7B%22short_by%22:%22popularity%22,%22seller_by%22:[],%22brand_by%22:[],%22price%22:%7B%22min%22:0,%22max%22:0%7D%7D'
-    #         self.print_log(f'fetching bike page {page_count_bikes}...')
-    #         api_dict = requests.get(url_bikes).json()
-    #         last_page = api_dict['data']['products']['last_page']
-    #         product_list = api_dict['data']['products']['data']
-
-    #         db_dict_bikes_new['products'] += product_list
-
-    #         if page_count_bikes == last_page:
-    #             db_dict_bikes_new['total_product_count'] = api_dict['data']['products']['total']
-    #             break
-    #         page_count_bikes += 1
-    #     # sort product list
-    #     db_dict_bikes_new['products'] = sorted(db_dict_bikes_new['products'], key=lambda k: k['name'])
-
-    #     # products_stocked_in = [] # not in use
-    #     # products_stocked_out = [] # not in use
-    #     pairs = zip(self.db_dict_bikes['products'], db_dict_bikes_new['products'])
-
-    #     for i,j in pairs:
-    #         if i['name'] == j['name']:
-    #             # product name matched
-    #             self.print_log('product name matched')
-    #             if i['stock'] != j['stock']:
-    #                 # stock data modified
-    #                 self.print_log('stock data modified')
-    #                 if j['stock'] == 0:
-    #                     # product stocked out
-    #                     self.print_log('product stocked out')
-    #                     # products_stocked_out.append(j)
-    #                     fields = [("Stocks", j['stock'], True), ('Price', j['price'], True),]
-    #                     self.bot_send_embed(self.channels_dict['single_bike_stocks'], fields, j['name'], author_name='Stocked Out!', colour=0xFF0000)
-    #                 elif j['stock'] != 0 and i['stock'] == 0:
-    #                     # product stocked in
-    #                     self.print_log('product stocked in')
-    #                     # products_stocked_in.append(j)
-    #                     fields = [("Stocks", j['stock'], True), ('Price', j['price'], True),]
-    #                     self.bot_send_embed(self.channels_dict['single_bike_stocks'], fields, j['name'], author_name='Stocked In!', colour=0x00FF00)
-    #         else:
-    #             # product name didn't match
-    #             self.print_log('product name did not match')
-    #     self.db_dict_bikes = db_dict_bikes_new.copy()
-
     def dic_to_table(self, dic, channel):
         timestamp = f"```\n\n\nUpdated On --> {datetime.now().strftime('%d/%m/%y >> %-I:%M:%S %p')}```"
         df=pd.DataFrame(dic, columns=['name', 'stock', 'price'])
@@ -260,6 +174,7 @@ class ConsoleApp:
             styled_table = '```'+tabulate(df, headers=['Products', 'Stocks', 'Prices'], tablefmt='fancy_grid')+'```'
             self.bot_log(timestamp, channel)
             self.bot_log(styled_table, channel)
+            self.bot_log('```List Ended```', channel)
         else:
             idx_row_start = 0
             idx_row_end = 0
@@ -275,16 +190,16 @@ class ConsoleApp:
                     self.bot_log(timestamp, channel)
                     self.bot_log(styled_table, channel)
                 else:
-                    time.sleep(5)
+                    time.sleep(3)
                     styled_table = '```'+tabulate(df.iloc[idx_row_start:idx_row_end], tablefmt='fancy_grid')+'```'
                     idx_row_start += 15
                     df_idx_len -= 15
                     self.bot_log(styled_table, channel)
             styled_table = '```'+tabulate(df.iloc[idx_row_end:], tablefmt='fancy_grid')+'```'
             self.bot_log(styled_table, channel)
+            self.bot_log('```List Ended```', channel)
 
     def bot_log(self, msg, channel):
-        # await channel.send('Test') # We can't do this because of the above comment
         asyncio.run_coroutine_threadsafe(self.bot_cog.send_log(msg, channel), self.evt_loop)
 
     def print_log(self, msg):
@@ -296,64 +211,72 @@ class MyCog(Cog):
         self.bot = bot
         self.bg_task =  bg_task
         self.req = {}
-        self.evt_exit_thread = threading.Event()
-        self.t_lock = threading.Lock()
+        # thread kill events
+        self.evt_exit_th1 = threading.Event()
+        self.evt_exit_th2 = threading.Event()
+        self.evt_exit_th3 = threading.Event()
+        self.evt_exit_th4 = threading.Event()
+        self.evt_exit_th5 = threading.Event()
+
         self.db_dict_smartphones = {'products':[],'total_product_count':''}
         self.db_dict_bikes = {'products':[],'total_product_count':''}
+        self.tp_exec = ThreadPoolExecutor()
+        self.dict_futures = {}
 
-    @command(name='11')
+    @command(name='arman11')
     async def cmd_load_all_products_data(self, ctx):
         self.print_log('triggered --> cmd_load_all_products_data()')
+        
+        self.print_log('executing th1')
+        self.dict_futures[1] = self.tp_exec.submit(self.load_all_products_data)
         await ctx.send('command granted')
-        t = threading.Thread(target=self.load_all_products_data)
-        t.start()
 
-    @command(name='10')
+    @command(name='arman10')
     async def cmd_kill_load_all_products_data(self, ctx):
         self.print_log('triggered --> cmd_kill_load_all_products_data')
+        self.evt_exit_th1.set()
         await ctx.send('command granted')
-        self.evt_exit_thread.set()
 
-    @command(name='21')
+    @command(name='arman21')
     async def cmd_run_console_app(self, ctx):
         self.print_log('triggered --> cmd_run_console_app()')
+        self.dict_futures[2] = self.tp_exec.submit(self.bg_task, self, asyncio.get_event_loop(), self.bot.dict_channels, self.bot.kwargs)
         await ctx.send('command granted')
-        self.blocker_background_task()
 
-    @command(name='20')
+    @command(name='arman20')
     async def cmd_kill_console_app(self, ctx):
         self.print_log('triggered --> cmd_kill_console_app')
+        self.evt_exit_th2.set()
         await ctx.send('command granted')
-        self.evt_exit_thread.set()
 
 
     def load_all_products_data(self):
         while True:
-            if self.evt_exit_thread.is_set():
+            if self.evt_exit_th1.is_set():
+                self.evt_exit_th1.clear()
+                self.print_log('th1 killed')
                 break
-                self.print_log('thread killed')
-            # # load smartphones db
-            # self.load_product_db(
-            #     'https://eorange.shop/get-products/Smartphone?type=category&page=',
-            #     '&filter=%7B%22short_by%22:%22popularity%22,%22seller_by%22:[],%22brand_by%22:[],%22price%22:%7B%22min%22:0,%22max%22:0%7D%7D',
-            #     self.db_dict_smartphones,
-            #     'smartphone'
-            # )
-            # # load bikes db
-            # print('sleeping 5 sec')
-            # time.sleep(5)
-            # self.load_product_db(
-            #     'https://eorange.shop/get-products/Motorcycle-Scooter?type=category&page=',
-            #     '&filter=%7B%22short_by%22:%22popularity%22,%22seller_by%22:[],%22brand_by%22:[],%22price%22:%7B%22min%22:0,%22max%22:0%7D%7D',
-            #     self.db_dict_bikes,
-            #     'bike'
-            # )
-            # print('sleeping 5 sec')
-            # time.sleep(5)
-            print('fetching test db')
-            self.db_dict_smartphones_test = requests.get('https://api.jsonbin.io/b/6065ca51861c8e2b6a82deef/latest').json()['data']['products']
-            print('sleep 5')
+            # load smartphones db
+            self.load_product_db(
+                'https://eorange.shop/get-products/Smartphone?type=category&page=',
+                '&filter=%7B%22short_by%22:%22popularity%22,%22seller_by%22:[],%22brand_by%22:[],%22price%22:%7B%22min%22:0,%22max%22:0%7D%7D',
+                self.db_dict_smartphones,
+                'smartphone'
+            )
+            # load bikes db
+            self.load_product_db(
+                'https://eorange.shop/get-products/Motorcycle-Scooter?type=category&page=',
+                '&filter=%7B%22short_by%22:%22popularity%22,%22seller_by%22:[],%22brand_by%22:[],%22price%22:%7B%22min%22:0,%22max%22:0%7D%7D',
+                self.db_dict_bikes,
+                'bike'
+            )
+            print('sleeping 5 sec')
             time.sleep(5)
+            # print('fetching test db')
+            # self.db_dict_smartphones_test = requests.get('https://api.jsonbin.io/b/6065ca51861c8e2b6a82deef/latest').json()['data']['products']
+            # print('sleep 5')
+            # time.sleep(5)
+
     def load_product_db(self, api_url_first, api_url_last, db_dict, product_name):
         # load product database
         page_count = 1
@@ -381,7 +304,7 @@ class MyCog(Cog):
         db_dict['total_product_count'] = local_db_dict['total_product_count']
     
 
-    @command(name='00')
+    @command(name='arman00')
     async def cmd_test(self, ctx):
         t = threading.Thread(
             target=self.test,
@@ -391,29 +314,18 @@ class MyCog(Cog):
 
     def test(self, evt_loop):
         print(self.db_dict_smartphones['products'][0]['name'])
-        # input('inp')
-
-
-
-    @command(name='00')
-    async def cmd_test(self, ctx):
-        t = threading.Thread(
-            target=self.test_func_sync,
-            args=(asyncio.get_event_loop(),)
-        )
-        t.start()
     
     def test_func_sync(self, evt_loop):
         while True:
             if self.evt_exit_thread.is_set():
                 self.evt_exit_thread.clear()
                 break
-            asyncio.run_coroutine_threadsafe(self.send_log('run loop', self.bot.channels_dict['robot_commands']), evt_loop)
+            asyncio.run_coroutine_threadsafe(self.send_log('run loop', self.bot.dict_channels['robot_commands']), evt_loop)
             self.req = requests.get('https://api.jsonbin.io/b/6065ca51861c8e2b6a82deef/latest').json()
-            asyncio.run_coroutine_threadsafe(self.send_log(self.req, self.bot.channels_dict['robot_commands']), evt_loop)
-            # await self.bot.channels_dict['robot_commands'].send(self.req)
+            asyncio.run_coroutine_threadsafe(self.send_log(self.req, self.bot.dict_channels['robot_commands']), evt_loop)
+            # await self.bot.dict_channels['robot_commands'].send(self.req)
             # await asyncio.sleep(5)
-            asyncio.run_coroutine_threadsafe(self.send_log('end loop', self.bot.channels_dict['robot_commands']), evt_loop)
+            asyncio.run_coroutine_threadsafe(self.send_log('end loop', self.bot.dict_channels['robot_commands']), evt_loop)
             time.sleep(10)
     
 
@@ -436,13 +348,6 @@ class MyCog(Cog):
     def print_log(self, msg):
         print(msg)
 
-    def blocker_background_task(self):
-        t_bg_task = threading.Thread(
-            target=self.bg_task,
-            args=(self, asyncio.get_event_loop(), self.bot.channels_dict, self.bot.kwargs)
-        )
-        t_bg_task.start()
-
     def bot_log(self, msg, channel):
         # await channel.send('Test') # We can't do this because of the above comment
         asyncio.run_coroutine_threadsafe(self.send_log(msg, channel), self.evt_loop)
@@ -460,7 +365,7 @@ class MyCog(Cog):
             if product_name in i['name'].lower() and i['stock'] > 0:
                 i['name'] = i['name'][:13]+'..'
                 products.append(i)
-        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+        self.dict_to_table(products, self.bot.dict_channels['robot_commands'])
     
     @command(name='onokia')
     async def cmd_nokia_stock_out(self, ctx, product_name='nokia'):
@@ -471,7 +376,7 @@ class MyCog(Cog):
             if product_name in i['name'].lower() and i['stock'] <= 0:
                 i['name'] = i['name'][:13]+'..'
                 products.append(i)
-        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+        self.dict_to_table(products, self.bot.dict_channels['robot_commands'])
 
     @command(name='samsung')
     async def cmd_samsung_stock(self, ctx, product_name='samsung'):
@@ -482,7 +387,7 @@ class MyCog(Cog):
             if product_name in i['name'].lower() and i['stock'] > 0:
                 i['name'] = i['name'][:13]+'..'
                 products.append(i)
-        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+        self.dict_to_table(products, self.bot.dict_channels['robot_commands'])
     
     @command(name='osamsung')
     async def cmd_samsung_stock_out(self, ctx, product_name='samsung'):
@@ -493,7 +398,7 @@ class MyCog(Cog):
             if product_name in i['name'].lower() and i['stock'] <= 0:
                 i['name'] = i['name'][:13]+'..'
                 products.append(i)
-        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+        self.dict_to_table(products, self.bot.dict_channels['robot_commands'])
 
     @command(name='realme')
     async def cmd_realme_stock(self, ctx, product_name='realme'):
@@ -504,7 +409,7 @@ class MyCog(Cog):
             if product_name in i['name'].lower() and i['stock'] > 0:
                 i['name'] = i['name'][:13]+'..'
                 products.append(i)
-        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+        self.dict_to_table(products, self.bot.dict_channels['robot_commands'])
     
     @command(name='orealme')
     async def cmd_realme_stock_out(self, ctx, product_name='realme'):
@@ -515,7 +420,7 @@ class MyCog(Cog):
             if product_name in i['name'].lower() and i['stock'] <= 0:
                 i['name'] = i['name'][:13]+'..'
                 products.append(i)
-        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+        self.dict_to_table(products, self.bot.dict_channels['robot_commands'])
 
     @command(name='xiaomi')
     async def cmd_xiaomi_stock(self, ctx, product_name='xiaomi'):
@@ -526,7 +431,7 @@ class MyCog(Cog):
             if product_name in i['name'].lower() and i['stock'] > 0:
                 i['name'] = i['name'][:13]+'..'
                 products.append(i)
-        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+        self.dict_to_table(products, self.bot.dict_channels['robot_commands'])
     
     @command(name='oxiaomi')
     async def cmd_xiaomi_stock_out(self, ctx, product_name='xiaomi'):
@@ -537,7 +442,7 @@ class MyCog(Cog):
             if product_name in i['name'].lower() and i['stock'] <= 0:
                 i['name'] = i['name'][:13]+'..'
                 products.append(i)
-        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+        self.dict_to_table(products, self.bot.dict_channels['robot_commands'])
 
     @command(name='iphone')
     async def cmd_iphone_stock(self, ctx, product_name='iphone'):
@@ -548,7 +453,7 @@ class MyCog(Cog):
             if product_name in i['name'].lower() and i['stock'] > 0:
                 i['name'] = i['name'][:13]+'..'
                 products.append(i)
-        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+        self.dict_to_table(products, self.bot.dict_channels['robot_commands'])
     
     @command(name='oiphone')
     async def cmd_iphone_stock_out(self, ctx, product_name='iphone'):
@@ -559,7 +464,7 @@ class MyCog(Cog):
             if product_name in i['name'].lower() and i['stock'] <= 0:
                 i['name'] = i['name'][:13]+'..'
                 products.append(i)
-        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+        self.dict_to_table(products, self.bot.dict_channels['robot_commands'])
 
     @command(name='vivo')
     async def cmd_vivo_stock(self, ctx, product_name='vivo'):
@@ -570,7 +475,7 @@ class MyCog(Cog):
             if product_name in i['name'].lower() and i['stock'] > 0:
                 i['name'] = i['name'][:13]+'..'
                 products.append(i)
-        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+        self.dict_to_table(products, self.bot.dict_channels['robot_commands'])
     
     @command(name='ovivo')
     async def cmd_vivo_stock_out(self, ctx, product_name='vivo'):
@@ -581,7 +486,7 @@ class MyCog(Cog):
             if product_name in i['name'].lower() and i['stock'] <= 0:
                 i['name'] = i['name'][:13]+'..'
                 products.append(i)
-        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+        self.dict_to_table(products, self.bot.dict_channels['robot_commands'])
 
     @command(name='oppo')
     async def cmd_oppo_stock(self, ctx, product_name='oppo'):
@@ -592,7 +497,7 @@ class MyCog(Cog):
             if product_name in i['name'].lower() and i['stock'] > 0:
                 i['name'] = i['name'][:13]+'..'
                 products.append(i)
-        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+        self.dict_to_table(products, self.bot.dict_channels['robot_commands'])
     
     @command(name='ooppo')
     async def cmd_oppo_stock_out(self, ctx, product_name='oppo'):
@@ -603,7 +508,7 @@ class MyCog(Cog):
             if product_name in i['name'].lower() and i['stock'] <= 0:
                 i['name'] = i['name'][:13]+'..'
                 products.append(i)
-        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+        self.dict_to_table(products, self.bot.dict_channels['robot_commands'])
 
     @command(name='poco')
     async def cmd_poco_stock(self, ctx, product_name='poco'):
@@ -614,7 +519,7 @@ class MyCog(Cog):
             if product_name in i['name'].lower() and i['stock'] > 0:
                 i['name'] = i['name'][:13]+'..'
                 products.append(i)
-        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+        self.dict_to_table(products, self.bot.dict_channels['robot_commands'])
     
     @command(name='opoco')
     async def cmd_poco_stock_out(self, ctx, product_name='poco'):
@@ -625,7 +530,7 @@ class MyCog(Cog):
             if product_name in i['name'].lower() and i['stock'] <= 0:
                 i['name'] = i['name'][:13]+'..'
                 products.append(i)
-        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+        self.dict_to_table(products, self.bot.dict_channels['robot_commands'])
 
     @command(name='symphony')
     async def cmd_symphony_stock(self, ctx, product_name='symphony'):
@@ -636,7 +541,7 @@ class MyCog(Cog):
             if product_name in i['name'].lower() and i['stock'] > 0:
                 i['name'] = i['name'][:13]+'..'
                 products.append(i)
-        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+        self.dict_to_table(products, self.bot.dict_channels['robot_commands'])
     
     @command(name='osymphony')
     async def cmd_symphony_stock_out(self, ctx, product_name='symphony'):
@@ -647,7 +552,7 @@ class MyCog(Cog):
             if product_name in i['name'].lower() and i['stock'] <= 0:
                 i['name'] = i['name'][:13]+'..'
                 products.append(i)
-        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+        self.dict_to_table(products, self.bot.dict_channels['robot_commands'])
 
     @command(name='huawei')
     async def cmd_huawei_stock(self, ctx, product_name='huawei'):
@@ -658,7 +563,7 @@ class MyCog(Cog):
             if product_name in i['name'].lower() and i['stock'] > 0:
                 i['name'] = i['name'][:13]+'..'
                 products.append(i)
-        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+        self.dict_to_table(products, self.bot.dict_channels['robot_commands'])
     
     @command(name='ohuawei')
     async def cmd_huawei_stock_out(self, ctx, product_name='huawei'):
@@ -669,7 +574,7 @@ class MyCog(Cog):
             if product_name in i['name'].lower() and i['stock'] <= 0:
                 i['name'] = i['name'][:13]+'..'
                 products.append(i)
-        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+        self.dict_to_table(products, self.bot.dict_channels['robot_commands'])
 
     @command(name='maximus')
     async def cmd_maximus_stock(self, ctx, product_name='maximus'):
@@ -680,7 +585,7 @@ class MyCog(Cog):
             if product_name in i['name'].lower() and i['stock'] > 0:
                 i['name'] = i['name'][:13]+'..'
                 products.append(i)
-        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+        self.dict_to_table(products, self.bot.dict_channels['robot_commands'])
     
     @command(name='omaximus')
     async def cmd_maximus_stock_out(self, ctx, product_name='maximus'):
@@ -691,7 +596,7 @@ class MyCog(Cog):
             if product_name in i['name'].lower() and i['stock'] <= 0:
                 i['name'] = i['name'][:13]+'..'
                 products.append(i)
-        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+        self.dict_to_table(products, self.bot.dict_channels['robot_commands'])
 
     @command(name='walton')
     async def cmd_walton_stock(self, ctx, product_name='walton'):
@@ -702,7 +607,7 @@ class MyCog(Cog):
             if product_name in i['name'].lower() and i['stock'] > 0:
                 i['name'] = i['name'][:13]+'..'
                 products.append(i)
-        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+        self.dict_to_table(products, self.bot.dict_channels['robot_commands'])
     
     @command(name='owalton')
     async def cmd_walton_stock_out(self, ctx, product_name='walton'):
@@ -713,7 +618,7 @@ class MyCog(Cog):
             if product_name in i['name'].lower() and i['stock'] <= 0:
                 i['name'] = i['name'][:13]+'..'
                 products.append(i)
-        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+        self.dict_to_table(products, self.bot.dict_channels['robot_commands'])
     #####################################################################################################
     ########################################### bikes ###################################################
     @command(name='bajaj')
@@ -725,7 +630,7 @@ class MyCog(Cog):
             if product_name in i['name'].lower() and i['stock'] > 0:
                 i['name'] = i['name'][:13]+'..'
                 products.append(i)
-        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+        self.dict_to_table(products, self.bot.dict_channels['robot_commands'])
     
     @command(name='obajaj')
     async def cmd_bajaj_stock_out(self, ctx, product_name='bajaj'):
@@ -736,7 +641,7 @@ class MyCog(Cog):
             if product_name in i['name'].lower() and i['stock'] <= 0:
                 i['name'] = i['name'][:13]+'..'
                 products.append(i)
-        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+        self.dict_to_table(products, self.bot.dict_channels['robot_commands'])
 
     @command(name='yamaha')
     async def cmd_yamaha_stock(self, ctx, product_name='yamaha'):
@@ -747,7 +652,7 @@ class MyCog(Cog):
             if product_name in i['name'].lower() and i['stock'] > 0:
                 i['name'] = i['name'][:13]+'..'
                 products.append(i)
-        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+        self.dict_to_table(products, self.bot.dict_channels['robot_commands'])
     
     @command(name='oyamaha')
     async def cmd_yamaha_stock_out(self, ctx, product_name='yamaha'):
@@ -758,7 +663,7 @@ class MyCog(Cog):
             if product_name in i['name'].lower() and i['stock'] <= 0:
                 i['name'] = i['name'][:13]+'..'
                 products.append(i)
-        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+        self.dict_to_table(products, self.bot.dict_channels['robot_commands'])
 
     @command(name='honda')
     async def cmd_honda_stock(self, ctx, product_name='honda'):
@@ -769,7 +674,7 @@ class MyCog(Cog):
             if product_name in i['name'].lower() and i['stock'] > 0:
                 i['name'] = i['name'][:13]+'..'
                 products.append(i)
-        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+        self.dict_to_table(products, self.bot.dict_channels['robot_commands'])
     
     @command(name='ohonda')
     async def cmd_honda_stock_out(self, ctx, product_name='honda'):
@@ -780,7 +685,7 @@ class MyCog(Cog):
             if product_name in i['name'].lower() and i['stock'] <= 0:
                 i['name'] = i['name'][:13]+'..'
                 products.append(i)
-        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+        self.dict_to_table(products, self.bot.dict_channels['robot_commands'])
 
     @command(name='tvs')
     async def cmd_tvs_stock(self, ctx, product_name='tvs'):
@@ -791,7 +696,7 @@ class MyCog(Cog):
             if product_name in i['name'].lower() and i['stock'] > 0:
                 i['name'] = i['name'][:13]+'..'
                 products.append(i)
-        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+        self.dict_to_table(products, self.bot.dict_channels['robot_commands'])
     
     @command(name='otvs')
     async def cmd_tvs_stock_out(self, ctx, product_name='tvs'):
@@ -802,7 +707,7 @@ class MyCog(Cog):
             if product_name in i['name'].lower() and i['stock'] <= 0:
                 i['name'] = i['name'][:13]+'..'
                 products.append(i)
-        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+        self.dict_to_table(products, self.bot.dict_channels['robot_commands'])
 
     @command(name='hero')
     async def cmd_hero_stock(self, ctx, product_name='hero'):
@@ -813,7 +718,7 @@ class MyCog(Cog):
             if product_name in i['name'].lower() and i['stock'] > 0:
                 i['name'] = i['name'][:13]+'..'
                 products.append(i)
-        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+        self.dict_to_table(products, self.bot.dict_channels['robot_commands'])
     
     @command(name='ohero')
     async def cmd_hero_stock_out(self, ctx, product_name='hero'):
@@ -824,7 +729,7 @@ class MyCog(Cog):
             if product_name in i['name'].lower() and i['stock'] <= 0:
                 i['name'] = i['name'][:13]+'..'
                 products.append(i)
-        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+        self.dict_to_table(products, self.bot.dict_channels['robot_commands'])
 
     @command(name='lifan')
     async def cmd_lifan_stock(self, ctx, product_name='lifan'):
@@ -835,7 +740,7 @@ class MyCog(Cog):
             if product_name in i['name'].lower() and i['stock'] > 0:
                 i['name'] = i['name'][:13]+'..'
                 products.append(i)
-        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+        self.dict_to_table(products, self.bot.dict_channels['robot_commands'])
     
     @command(name='olifan')
     async def cmd_lifan_stock_out(self, ctx, product_name='lifan'):
@@ -846,7 +751,7 @@ class MyCog(Cog):
             if product_name in i['name'].lower() and i['stock'] <= 0:
                 i['name'] = i['name'][:13]+'..'
                 products.append(i)
-        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+        self.dict_to_table(products, self.bot.dict_channels['robot_commands'])
 
     @command(name='runner')
     async def cmd_runner_stock(self, ctx, product_name='runner'):
@@ -857,7 +762,7 @@ class MyCog(Cog):
             if product_name in i['name'].lower() and i['stock'] > 0:
                 i['name'] = i['name'][:13]+'..'
                 products.append(i)
-        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+        self.dict_to_table(products, self.bot.dict_channels['robot_commands'])
     
     @command(name='orunner')
     async def cmd_runner_stock_out(self, ctx, product_name='runner'):
@@ -868,7 +773,7 @@ class MyCog(Cog):
             if product_name in i['name'].lower() and i['stock'] <= 0:
                 i['name'] = i['name'][:13]+'..'
                 products.append(i)
-        self.dict_to_table(products, self.bot.channels_dict['robot_commands'])
+        self.dict_to_table(products, self.bot.dict_channels['robot_commands'])
 
     #####################################################################################################
     #####################################################################################################
@@ -935,7 +840,7 @@ class DiscordBot(commands.Bot):
 
     # @self.event
     async def on_ready(self):
-        self.channels_dict = dict(
+        self.dict_channels = dict(
             robot_commands = self.get_channel(self.CH_ID_robot_commands),
             single_phone_stocks = self.get_channel(self.CH_ID_single_phone_stocks),
             single_bike_stocks = self.get_channel(self.CH_ID_single_bike_stocks),
@@ -974,3 +879,5 @@ if __name__ == "__main__":
 # concept of sending discord message from background task >> https://stackoverflow.com/a/64370097
 # concept of using await object out of async funtion >> https://stackoverflow.com/a/53726266
 # concept of killing threads gracefully >> https://blog.miguelgrinberg.com/post/how-to-kill-a-python-thread
+# concept of sorting dictionary >> https://towardsdatascience.com/sorting-a-dictionary-in-python-4280451e1637
+# concept of using threadpool executor >> https://www.digitalocean.com/community/tutorials/how-to-use-threadpoolexecutor-in-python-3
