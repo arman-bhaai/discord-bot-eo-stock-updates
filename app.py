@@ -813,7 +813,7 @@ class MyCog(Cog):
 
 class DiscordBot(commands.Bot):
     def __init__(self):
-        command_prefix = '+'
+        command_prefix = '..'
         super().__init__(command_prefix=command_prefix)
 
         # necessary IDs
