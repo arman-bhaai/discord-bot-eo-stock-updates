@@ -35,13 +35,14 @@ class ConsoleApp:
 
         # while True:
         #     self.loop_all_products()
+        self.bot_cog.dict_futures[3] = self.bot_cog.tp_exec.submit(self.loop_single_products)
+        
         while True:
             if self.bot_cog.evt_exit_th2.is_set():
                 self.bot_cog.evt_exit_th2.clear()
                 self.print_log('th2 killed')
             
             self.loop_all_products()
-            self.bot_cog.dict_futures = self.bot_cog.tp_exec.submit(self.loop_single_products)
 
             
     def loop_all_products(self):
@@ -71,28 +72,33 @@ class ConsoleApp:
         time.sleep(5)
 
     def loop_single_products(self):
-        # display single smartphone stocks
-        db_dict_products_new = self.single_product_stocks(
-            'smartphone',
-            self.bot_cog.db_dict_smartphones,
-            self.db_dict_smartphones_old,
-            self.dict_channels['single_phone_stocks']
-        )
-        self.print_log('substituting old smartphone db with recent db')
-        self.db_dict_smartphones_old = db_dict_products_new
-        print('sleep 5 sec sing product stock')
+        while True:
+            # if self.bot_cog.evt_exit_th3.is_set():
+            #     self.bot_cog.evt_exit_th3.clear()
+            #     self.print_log('th3 killed')
+            
+            # display single smartphone stocks
+            db_dict_products_new = self.single_product_stocks(
+                'smartphone',
+                self.bot_cog.db_dict_smartphones,
+                self.db_dict_smartphones_old,
+                self.dict_channels['single_phone_stocks']
+            )
+            self.print_log('substituting old smartphone db with recent db')
+            self.db_dict_smartphones_old = db_dict_products_new
+            print('sleep 5 sec sing product stock')
 
-        # display single bike stocks
-        db_dict_products_new = self.single_product_stocks(
-            'bike',
-            self.bot_cog.db_dict_bikes,
-            self.db_dict_bikes_old,
-            self.dict_channels['single_bike_stocks']
-        )
-        self.print_log('substituting old bike db with recent db')
-        self.db_dict_smartphones_old = db_dict_products_new
-        print('sleep 5 sec sing product stock')
-        time.sleep(5)
+            # display single bike stocks
+            db_dict_products_new = self.single_product_stocks(
+                'bike',
+                self.bot_cog.db_dict_bikes,
+                self.db_dict_bikes_old,
+                self.dict_channels['single_bike_stocks']
+            )
+            self.print_log('substituting old bike db with recent db')
+            self.db_dict_smartphones_old = db_dict_products_new
+            print('sleep 20 sec sing product stock')
+            time.sleep(20)
         
     def bot_send_embed(self, channel, fields, title='Title', desc='desc', colour=0xFF0000, timestamp=datetime.utcnow(), author_name='BDCG', footer='footer'):
         embed = Embed(title=title, description=desc,
@@ -228,7 +234,8 @@ class MyCog(Cog):
         self.print_log('triggered --> cmd_load_all_products_data()')
         
         self.print_log('executing th1')
-        self.dict_futures[1] = self.tp_exec.submit(self.load_all_products_data)
+        self.dict_futures[1.1] = self.tp_exec.submit(self.load_smartphones_db)
+        self.dict_futures[1.2] = self.tp_exec.submit(self.load_bikes_db)
         await ctx.send('command granted')
 
     @command(name='arman10')
@@ -250,11 +257,11 @@ class MyCog(Cog):
         await ctx.send('command granted')
 
 
-    def load_all_products_data(self):
+    def load_smartphones_db(self):
         while True:
             if self.evt_exit_th1.is_set():
-                self.evt_exit_th1.clear()
-                self.print_log('th1 killed')
+                # self.evt_exit_th1.clear()
+                self.print_log('th1.1 killed')
                 break
             # load smartphones db
             self.load_product_db(
@@ -263,6 +270,15 @@ class MyCog(Cog):
                 self.db_dict_smartphones,
                 'smartphone'
             )
+            print('sleeping 5 sec th 1.1')
+            time.sleep(5)
+    
+    def load_bikes_db(self):
+        while True:
+            if self.evt_exit_th1.is_set():
+                # self.evt_exit_th1.clear()
+                self.print_log('th1.1 killed')
+                break
             # load bikes db
             self.load_product_db(
                 'https://eorange.shop/get-products/Motorcycle-Scooter?type=category&page=',
@@ -270,12 +286,8 @@ class MyCog(Cog):
                 self.db_dict_bikes,
                 'bike'
             )
-            print('sleeping 5 sec')
+            print('sleeping 5 sec th 1.2')
             time.sleep(5)
-            # print('fetching test db')
-            # self.db_dict_smartphones_test = requests.get('https://api.jsonbin.io/b/6065ca51861c8e2b6a82deef/latest').json()['data']['products']
-            # print('sleep 5')
-            # time.sleep(5)
 
     def load_product_db(self, api_url_first, api_url_last, db_dict, product_name):
         # load product database
