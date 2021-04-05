@@ -1177,29 +1177,29 @@ class DiscordBot(commands.Bot):
 
         self.dict_channels = {}
 
-        # # necessary IDs
-        # self.CH_ID_robot_commands = 826883934750507069
-        # self.CH_ID_single_phone_stocks = 825526202017775646
-        # self.CH_ID_single_bike_stocks = 825791268755079178
-        # self.CH_ID_all_phones_stocks = 825498395400601630
-        # self.CH_ID_all_bikes_stocks = 826880912225468467
-        # self.CH_ID_all_phones_stock_outs = 826883287267672135
-        # self.CH_ID_all_bikes_stock_outs = 826883488036683806
-        # self.GUILD_ID = 823819408894984262
+        # necessary IDs
+        self.CH_ID_robot_commands = 826883934750507069
+        self.CH_ID_single_phone_stocks = 825526202017775646
+        self.CH_ID_single_bike_stocks = 825791268755079178
+        self.CH_ID_all_phones_stocks = 825498395400601630
+        self.CH_ID_all_bikes_stocks = 826880912225468467
+        self.CH_ID_all_phones_stock_outs = 826883287267672135
+        self.CH_ID_all_bikes_stock_outs = 826883488036683806
+        self.GUILD_ID = 823819408894984262
 
-        ### test server necessary IDs
-        self.CH_ID_robot_commands = 828202226581372978
-        self.CH_ID_single_phone_stocks = 828201918878187542
-        self.CH_ID_single_bike_stocks = 828201951564267521
-        self.CH_ID_all_phones_stocks = 828202027019665428
-        self.CH_ID_all_bikes_stocks = 828202061924925480
-        self.CH_ID_all_phones_stock_outs = 828202121298968576
-        self.CH_ID_all_bikes_stock_outs = 828202156053758011
-        self.GUILD_ID = 828200839369719819
+        # ### test server necessary IDs
+        # self.CH_ID_robot_commands = 828202226581372978
+        # self.CH_ID_single_phone_stocks = 828201918878187542
+        # self.CH_ID_single_bike_stocks = 828201951564267521
+        # self.CH_ID_all_phones_stocks = 828202027019665428
+        # self.CH_ID_all_bikes_stocks = 828202061924925480
+        # self.CH_ID_all_phones_stock_outs = 828202121298968576
+        # self.CH_ID_all_bikes_stock_outs = 828202156053758011
+        # self.GUILD_ID = 828200839369719819
      
     def run(self):
-        # DISCORD_TOKEN = os.environ['DISCORD_TOKEN']
-        DISCORD_TOKEN = os.environ['TEST_DISCORD_TOKEN'] ### for test server
+        DISCORD_TOKEN = os.environ['DISCORD_TOKEN']
+        # DISCORD_TOKEN = os.environ['TEST_DISCORD_TOKEN'] ### for test server
 
         self.print_log('running bot')
         super().run(DISCORD_TOKEN, reconnect=True)
