@@ -20,246 +20,9 @@ import os
 from dotenv import load_dotenv
 
 
-
-class ConsoleApp:
-    pass
-#     def __init__(self, bot_cog, evt_loop, dict_channels, kwargs):
-#         self.evt_loop = evt_loop
-#         self.dict_channels = dict_channels
-#         self.bot_cog = bot_cog
-#         self.kwargs = kwargs
-        # self.print_log('running ConsoleApp')
-        # self.db_dict_smartphones_old = {}
-        # self.db_dict_bikes_old = {}
-        # self.print_log('requesting eorange data api')
-        
-        # self.load_all_products_data()
-
-        # while True:
-        #     self.loop_all_products()
-        # self.bot_cog.dict_futures[3] = self.bot_cog.tp_exec.submit(self.loop_single_products)
-        
-        # while True:
-        #     if self.bot_cog.evt_exit_th2.is_set():
-        #         self.bot_cog.evt_exit_th2.clear()
-        #         self.print_log('th2 killed')
-            
-            # self.loop_all_products()
-
-            
-    # def loop_all_products(self):
-        # # show mass products stocks
-        # self.mass_products_stocks(
-        #     self.bot_cog.db_dict_smartphones,
-        #     self.dict_channels['all_phones_stocks'],
-        #     'smartphones'
-        # )
-        # self.mass_products_stocks(
-        #     self.bot_cog.db_dict_bikes,
-        #     self.dict_channels['all_bikes_stocks'],
-        #     'bikes'
-        # )
-        # # show mass products stockouts
-        # self.mass_products_stock_outs(
-        #     self.bot_cog.db_dict_smartphones,
-        #     self.dict_channels['all_phones_stock_outs'],
-        #     'smartphones'
-        # )
-        # self.mass_products_stock_outs(
-        #     self.bot_cog.db_dict_bikes,
-        #     self.dict_channels['all_bikes_stock_outs'],
-        #     'bikes'
-        # )
-        # self.print_log('sleep 5')
-        # time.sleep(5)
-    
-    # def loop_single_products(self):
-    #     while True:
-    #         # if self.bot_cog.evt_exit_th3.is_set():
-    #         #     self.bot_cog.evt_exit_th3.clear()
-    #         #     self.print_log('th3 killed')
-            
-    #         # display single smartphone stocks
-    #         db_dict_products_new = self.single_product_stocks(
-    #             'smartphone',
-    #             self.bot_cog.db_dict_smartphones,
-    #             self.db_dict_smartphones_old,
-    #             self.dict_channels['single_phone_stocks']
-    #         )
-    #         self.print_log('substituting old smartphone db with recent db')
-    #         self.db_dict_smartphones_old = db_dict_products_new
-    #         print('sleep 5 sec sing product stock')
-
-    #         # display single bike stocks
-    #         db_dict_products_new = self.single_product_stocks(
-    #             'bike',
-    #             self.bot_cog.db_dict_bikes,
-    #             self.db_dict_bikes_old,
-    #             self.dict_channels['single_bike_stocks']
-    #         )
-    #         self.print_log('substituting old bike db with recent db')
-    #         self.db_dict_smartphones_old = db_dict_products_new
-    #         print('sleep 20 sec sing product stock')
-    #         time.sleep(20)
-        
-    # def bot_send_embed(self, channel, fields, title='Title', desc='desc', colour=0xFF0000, timestamp=datetime.utcnow(), author_name='BDCG', footer='footer'):
-    #     embed = Embed(title=title, description=desc,
-    #     colour=colour, timestamp=timestamp)
-    #     fields = fields
-    #     for name, value, inline in fields:
-    #         embed.add_field(name=name, value=value, inline=inline)
-    #     embed.set_author(name=author_name)
-    #     # embed.set_image(url="https://media.tenor.com/images/cb37de2f54039535426738c62136d0e3/tenor.gif")
-    #     embed.set_footer(text=footer)
-    #     asyncio.run_coroutine_threadsafe(channel.send(embed=embed), self.evt_loop)
-
-    # def mass_products_stocks(self, db_dict_products, channel, product_name):
-    #     self.print_log(f'showing mass {product_name} stocks')
-    #     in_stock = []
-    #     for product in db_dict_products['products']:
-    #         if product['stock'] > 0:
-    #             product['name'] = product['name'][:13]+'..'
-    #             in_stock.append(product)
-    #     return self.dict_to_table(in_stock, channel)
-
-    # def mass_products_stock_outs(self, db_dict_products, channel, product_name):
-    #     self.print_log(f'showing mass {product_name} stocks')
-    #     out_of_stock = []
-    #     for product in db_dict_products['products']:
-    #         if product['stock'] <= 0:
-    #             product['name'] = product['name'][:13]+'..'
-    #             out_of_stock.append(product)
-        # return self.dict_to_table(out_of_stock, channel)       
-    
-    # def single_product_stocks(self, product_name, db_dict_products_new, db_dict_products_old, channel):
-    #     self.print_log(f'checking single {product_name} stocks...')
-    #     # find out instant stock modification
-    #     # load product database
-    #     db_dict_products_new = db_dict_products_new
-    #     db_dict_products_old = db_dict_products_old
-
-    #     if not db_dict_products_old:
-    #         db_dict_products_old = db_dict_products_new
-
-    #     pairs = zip(db_dict_products_old['products'], db_dict_products_new['products'])
-    #     # pairs = zip(db_dict_products_old['data'], db_dict_products_new['data'])
-
-    #     for i,j in pairs:
-    #         if i['name'] == j['name']:
-    #             # product name matched
-    #             self.print_log('product name matched')
-    #             # fields = [("Stocks", j['stock'], True), ('Price', j['price'], True),]
-    #             # self.bot_send_embed(self.dict_channels['single_phone_stocks'], fields, j['name'], author_name='Testtttt', colour=0xFF0000)
-    #             if i['stock'] != j['stock']:
-    #                 # stock data modified
-    #                 self.print_log('stock data modified')
-    #                 if j['stock'] == 0:
-    #                     # product stocked out
-    #                     self.print_log('product stocked out')
-    #                     # products_stocked_out.append(j)
-    #                     fields = [("Stocks", j['stock'], True), ('Price', j['price'], True),]
-    #                     self.bot_send_embed(channel, fields, j['name'], author_name='Stocked Out!', colour=0xFF0000)
-    #                 elif j['stock'] != 0 and i['stock'] == 0:
-    #                     # product stocked in
-    #                     self.print_log('product stocked in')
-    #                     # products_stocked_in.append(j)
-    #                     fields = [("Stocks", j['stock'], True), ('Price', j['price'], True),]
-    #                     self.bot_send_embed(channel, fields, j['name'], author_name='Stocked In!', colour=0x00FF00)
-    #             else:
-    #                 self.print_log('stock data unmodified')
-    #         else:
-    #             # product name didn't match
-    #             self.print_log('product name did not match')
-    #             input('product name did not match')
-    #     return db_dict_products_new
-
-    # def single_product_stocks(self, product_name, db_dict_products_new, db_dict_products_old, channel):
-    #     self.print_log(f'checking single {product_name} stocks...')
-    #     # find out instant stock modification
-    #     # load product database
-    #     db_dict_products_new = db_dict_products_new
-    #     db_dict_products_old = db_dict_products_old
-
-    #     if not db_dict_products_old:
-    #         db_dict_products_old = db_dict_products_new
-
-    #     pairs = zip(db_dict_products_old['products'], db_dict_products_new['products'])
-    #     # pairs = zip(db_dict_products_old['data'], db_dict_products_new['data'])
-
-    #     for i,j in pairs:
-    #         if i['name'] == j['name']:
-    #             # product name matched
-    #             self.print_log('product name matched')
-    #             # fields = [("Stocks", j['stock'], True), ('Price', j['price'], True),]
-    #             # self.bot_send_embed(self.dict_channels['single_phone_stocks'], fields, j['name'], author_name='Testtttt', colour=0xFF0000)
-    #             if i['stock'] != j['stock']:
-    #                 # stock data modified
-    #                 self.print_log('stock data modified')
-    #                 if j['stock'] == 0:
-    #                     # product stocked out
-    #                     self.print_log('product stocked out')
-    #                     # products_stocked_out.append(j)
-    #                     fields = [("Stocks", j['stock'], True), ('Price', j['price'], True),]
-    #                     self.bot_send_embed(channel, fields, j['name'], author_name='Stocked Out!', colour=0xFF0000)
-    #                 elif j['stock'] != 0 and i['stock'] == 0:
-    #                     # product stocked in
-    #                     self.print_log('product stocked in')
-    #                     # products_stocked_in.append(j)
-    #                     fields = [("Stocks", j['stock'], True), ('Price', j['price'], True),]
-    #                     self.bot_send_embed(channel, fields, j['name'], author_name='Stocked In!', colour=0x00FF00)
-    #             else:
-    #                 self.print_log('stock data unmodified')
-    #         else:
-    #             # product name didn't match
-    #             self.print_log('product name did not match')
-    #             input('product name did not match')
-    #     return db_dict_products_new
-
-    # def dict_to_table(self, dic, channel):
-    #     timestamp = f"```\n\n\nUpdated On --> {datetime.now().strftime('%d/%m/%y >> %-I:%M:%S %p')}```"
-    #     df=pd.DataFrame(dic, columns=['name', 'stock', 'price'])
-    #     df.index += 1
-    #     df_idx_len = len(df.index)
-    #     if df_idx_len <= 15:
-    #         styled_table = '```'+tabulate(df, headers=['Products', 'Stocks', 'Prices'], tablefmt='fancy_grid')+'```'
-    #         self.bot_log(timestamp, channel)
-    #         self.bot_log(styled_table, channel)
-    #         self.bot_log('```List Ended```', channel)
-    #     else:
-    #         idx_row_start = 0
-    #         idx_row_end = 0
-    #         # if df_idx_len > 16:
-    #         is_first_loop = True
-    #         while df_idx_len > 15:
-    #             idx_row_end += 15
-    #             if is_first_loop:
-    #                 styled_table = '```'+tabulate(df.iloc[idx_row_start:idx_row_end], headers=['Products', 'Stocks', 'Prices'], tablefmt='fancy_grid')+'```'
-    #                 idx_row_start += 15
-    #                 df_idx_len -= 15
-    #                 is_first_loop = False
-    #                 self.bot_log(timestamp, channel)
-    #                 self.bot_log(styled_table, channel)
-    #             else:
-    #                 time.sleep(3)
-    #                 styled_table = '```'+tabulate(df.iloc[idx_row_start:idx_row_end], tablefmt='fancy_grid')+'```'
-    #                 idx_row_start += 15
-    #                 df_idx_len -= 15
-    #                 self.bot_log(styled_table, channel)
-    #         styled_table = '```'+tabulate(df.iloc[idx_row_end:], tablefmt='fancy_grid')+'```'
-    #         self.bot_log(styled_table, channel)
-    #         self.bot_log('```List Ended```', channel)
-
-    # def bot_log(self, msg, channel):
-    #     asyncio.run_coroutine_threadsafe(self.bot_cog.send_log(msg, channel), self.evt_loop)
-
-    # def print_log(self, msg):
-    #     print(msg)
-
-
 class MyCog(Cog):
-    def __init__(self, bot, bg_task):
+    def __init__(self, bot):
         self.bot = bot
-        self.bg_task =  bg_task
         self.req = {}
         # thread kill events
         self.evt_exit_th1 = threading.Event()
@@ -268,16 +31,15 @@ class MyCog(Cog):
         self.evt_exit_th4 = threading.Event()
         self.evt_exit_th5 = threading.Event()
 
-        self.db_dict_smartphones = {'products': [],'total_product_count':''}
+        self.db_dict_smartphones = []
         self.db_dict_smartphones_list = []
-        self.db_dict_bikes =  {'products':{},'total_product_count':''}
+        self.db_dict_bikes =  []
         self.tp_exec = ThreadPoolExecutor()
         self.dict_futures = {}
         
         self.db_dict_smartphones_old = {}
         self.db_dict_bikes_old = {}
         
-        self.count = 0
         self.local_db_dict = {}
 
     @command(name='cmd11')
@@ -296,17 +58,17 @@ class MyCog(Cog):
         self.evt_exit_th1.set()
         await ctx.send('command granted')
 
-    @command(name='cmd21')
-    async def cmd_run_console_app(self, ctx):
-        self.print_log('triggered --> cmd_run_console_app()')
-        self.dict_futures[2] = self.tp_exec.submit(self.bg_task, self, asyncio.get_event_loop(), self.bot.dict_channels, self.bot.kwargs)
-        await ctx.send('command granted')
+    # @command(name='cmd01')
+    # async def cmd_run_console_app(self, ctx):
+    #     self.print_log('triggered --> cmd_run_console_app()')
+    #     self.dict_futures[2] = self.tp_exec.submit(self.bg_task, self, asyncio.get_event_loop(), self.bot.dict_channels, self.bot.kwargs)
+    #     await ctx.send('command granted')
 
-    @command(name='cmd20')
-    async def cmd_kill_console_app(self, ctx):
-        self.print_log('triggered --> cmd_kill_console_app')
-        self.evt_exit_th2.set()
-        await ctx.send('command granted')
+    # @command(name='cmd00')
+    # async def cmd_kill_console_app(self, ctx):
+    #     self.print_log('triggered --> cmd_kill_console_app')
+    #     self.evt_exit_th2.set()
+    #     await ctx.send('command granted')
 
     @command(name='cte')
     async def cmd_check_thread_errors(self, ctx):
@@ -317,7 +79,7 @@ class MyCog(Cog):
         # for fut in self.dict_futures.values():
         #     print(fut.result())
 
-    @command(name='cmd31')
+    @command(name='cmd21')
     async def cmd_run_loop_mass_products(self, ctx):
         self.print_log('trigged --> cmd_run_loop_mass_products()')
         self.dict_futures[4] = self.tp_exec.submit(self.loop_mass_products, asyncio.get_event_loop())
@@ -327,7 +89,7 @@ class MyCog(Cog):
         #         'smartphones'
         #     )
 
-    @command(name='cmd41')
+    @command(name='cmd31')
     async def cmd_run_loop_single_products(self, ctx):
         self.print_log('trigged --> cmd_run_loop_single_products()')
         self.dict_futures[3] = self.tp_exec.submit(self.loop_single_products, asyncio.get_event_loop())
@@ -338,7 +100,6 @@ class MyCog(Cog):
             if self.evt_exit_th3.is_set():
                 self.evt_exit_th3.clear()
                 self.print_log('th3 killed')
-            time.sleep(5)
 
             # display single smartphone stocks
             db_new = self.single_product_stocks(
@@ -353,7 +114,7 @@ class MyCog(Cog):
             
 
             # display single bike stocks
-            db_new = self.single_product_stocks(
+            db_new2 = self.single_product_stocks(
                 'bike',
                 self.db_dict_bikes,
                 self.db_dict_bikes_old,
@@ -361,40 +122,40 @@ class MyCog(Cog):
                 evt_loop
             )
             self.print_log('substituting old bike db with recent db')
-            self.db_dict_bikes_old = db_new
+            self.db_dict_bikes_old = db_new2
 
             self.print_log('sleeping 5 sec')
-            time.sleep(5)
+            time.sleep(20)
     
     def single_product_stocks(self, product_name, db_list_products_new, db_list_products_old, channel, evt_loop):
         self.print_log(f'checking single {product_name} stocks...')
         # find out instant stock modification
         # load product database
-        db_list_products_new = db_list_products_new
-        db_list_products_old = db_list_products_old
+        # db_list_products_new = db_list_products_new
+        # db_list_products_old = db_list_products_old
 
-        if not db_list_products_old:
-            db_list_products_old = db_list_products_new
+        # if not db_list_products_old:
+        #     db_list_products_old = db_list_products_new
 
-
-        for i in db_list_products_new:
-            for j in db_list_products_old:
-                if i['name'] == j['name']:
-                    self.print_log('single product name matched')
-                    if i['stock'] != j['stock']:
-                        print('stock data modified')
-                        if i['stock'] > 0:
-                            # product stocked in
-                            self.print_log('product stocked in')
-                            # products_stocked_in.append(j)
-                            fields = [("Stocks", i['stock'], True), ('Price', i['price'], True),]
-                            self.bot_send_embed(channel, fields, evt_loop, i['name'], author_name='Stocked In!', colour=0x00FF00)
-                        else:
-                            # product stocked out
-                            self.print_log('product stocked out')
-                            # products_stocked_out.append(j)
-                            fields = [("Stocks", i['stock'], True), ('Price', i['price'], True),]
-                            self.bot_send_embed(channel, fields, evt_loop, i['name'], author_name='Stocked Out!', colour=0xFF0000)
+        if db_list_products_old:
+            for i in db_list_products_new:
+                for j in db_list_products_old:
+                    if i['name'] == j['name']:
+                        self.print_log('single product name matched')
+                        if i['stock'] != j['stock']:
+                            print('stock data modified')
+                            if i['stock'] > 0:
+                                # product stocked in
+                                self.print_log('product stocked in')
+                                # products_stocked_in.append(j)
+                                fields = [("Stocks", i['stock'], True), ('Price', i['price'], True),]
+                                self.bot_send_embed(channel, fields, evt_loop, i['name'], author_name='Stocked In!', colour=0x00FF00)
+                            else:
+                                # product stocked out
+                                self.print_log('product stocked out')
+                                # products_stocked_out.append(j)
+                                fields = [("Stocks", i['stock'], True), ('Price', i['price'], True),]
+                                self.bot_send_embed(channel, fields, evt_loop, i['name'], author_name='Stocked Out!', colour=0xFF0000)
 
         return db_list_products_new
         
@@ -446,7 +207,7 @@ class MyCog(Cog):
     def mass_products_stocks(self, db_dict_products, channel, product_name, evt_loop):
         self.print_log(f'showing mass {product_name} stocks')
         in_stock = []
-        for product in db_dict_products['products']:
+        for product in db_dict_products:
             if product['stock'] > 0:
                 product['name'] = product['name'][:13]+'..'
                 in_stock.append(product)
@@ -455,7 +216,7 @@ class MyCog(Cog):
     def mass_products_stock_outs(self, db_dict_products, channel, product_name, evt_loop):
         self.print_log(f'showing mass {product_name} stocks')
         out_of_stock = []
-        for product in db_dict_products['products']:
+        for product in db_dict_products:
             if product['stock'] <= 0:
                 product['name'] = product['name'][:13]+'..'
                 out_of_stock.append(product)
@@ -1239,7 +1000,7 @@ class DiscordBot(commands.Bot):
 def main():
     load_dotenv()
     dbot = DiscordBot()
-    dbot.add_cog(MyCog(dbot, bg_task=ConsoleApp))
+    dbot.add_cog(MyCog(dbot))
     dbot.run()
     
 
