@@ -464,7 +464,7 @@ class MyCog(Cog):
 
     @command(name='nokia')
     async def cmd_nokia_stock(self, ctx, product_name='nokia'):
-        db_product_list = self.db_dict_smartphones['products']
+        db_product_list = self.db_dict_smartphones
         products = []
         
         for i in db_product_list:
@@ -475,7 +475,7 @@ class MyCog(Cog):
     
     @command(name='onokia')
     async def cmd_nokia_stock_out(self, ctx, product_name='nokia'):
-        db_product_list = self.db_dict_smartphones['products']
+        db_product_list = self.db_dict_smartphones
         products = []
         
         for i in db_product_list:
@@ -486,7 +486,7 @@ class MyCog(Cog):
 
     @command(name='samsung')
     async def cmd_samsung_stock(self, ctx, product_name='samsung'):
-        db_product_list = self.db_dict_smartphones['products']
+        db_product_list = self.db_dict_smartphones
         products = []
         
         for i in db_product_list:
@@ -497,7 +497,7 @@ class MyCog(Cog):
     
     @command(name='osamsung')
     async def cmd_samsung_stock_out(self, ctx, product_name='samsung'):
-        db_product_list = self.db_dict_smartphones['products']
+        db_product_list = self.db_dict_smartphones
         products = []
         
         for i in db_product_list:
@@ -508,7 +508,7 @@ class MyCog(Cog):
 
     @command(name='realme')
     async def cmd_realme_stock(self, ctx, product_name='realme'):
-        db_product_list = self.db_dict_smartphones['products']
+        db_product_list = self.db_dict_smartphones
         products = []
         
         for i in db_product_list:
@@ -519,7 +519,7 @@ class MyCog(Cog):
     
     @command(name='orealme')
     async def cmd_realme_stock_out(self, ctx, product_name='realme'):
-        db_product_list = self.db_dict_smartphones['products']
+        db_product_list = self.db_dict_smartphones
         products = []
         
         for i in db_product_list:
@@ -530,7 +530,7 @@ class MyCog(Cog):
 
     @command(name='xiaomi')
     async def cmd_xiaomi_stock(self, ctx, product_name='xiaomi'):
-        db_product_list = self.db_dict_smartphones['products']
+        db_product_list = self.db_dict_smartphones
         products = []
         
         for i in db_product_list:
@@ -541,7 +541,7 @@ class MyCog(Cog):
     
     @command(name='oxiaomi')
     async def cmd_xiaomi_stock_out(self, ctx, product_name='xiaomi'):
-        db_product_list = self.db_dict_smartphones['products']
+        db_product_list = self.db_dict_smartphones
         products = []
         
         for i in db_product_list:
@@ -552,7 +552,7 @@ class MyCog(Cog):
 
     @command(name='iphone')
     async def cmd_iphone_stock(self, ctx, product_name='iphone'):
-        db_product_list = self.db_dict_smartphones['products']
+        db_product_list = self.db_dict_smartphones
         products = []
         
         for i in db_product_list:
@@ -563,7 +563,7 @@ class MyCog(Cog):
     
     @command(name='oiphone')
     async def cmd_iphone_stock_out(self, ctx, product_name='iphone'):
-        db_product_list = self.db_dict_smartphones['products']
+        db_product_list = self.db_dict_smartphones
         products = []
         
         for i in db_product_list:
@@ -574,7 +574,7 @@ class MyCog(Cog):
 
     @command(name='vivo')
     async def cmd_vivo_stock(self, ctx, product_name='vivo'):
-        db_product_list = self.db_dict_smartphones['products']
+        db_product_list = self.db_dict_smartphones
         products = []
         
         for i in db_product_list:
@@ -585,7 +585,7 @@ class MyCog(Cog):
     
     @command(name='ovivo')
     async def cmd_vivo_stock_out(self, ctx, product_name='vivo'):
-        db_product_list = self.db_dict_smartphones['products']
+        db_product_list = self.db_dict_smartphones
         products = []
         
         for i in db_product_list:
@@ -596,7 +596,7 @@ class MyCog(Cog):
 
     @command(name='oppo')
     async def cmd_oppo_stock(self, ctx, product_name='oppo'):
-        db_product_list = self.db_dict_smartphones['products']
+        db_product_list = self.db_dict_smartphones
         products = []
         
         for i in db_product_list:
@@ -607,7 +607,7 @@ class MyCog(Cog):
     
     @command(name='ooppo')
     async def cmd_oppo_stock_out(self, ctx, product_name='oppo'):
-        db_product_list = self.db_dict_smartphones['products']
+        db_product_list = self.db_dict_smartphones
         products = []
         
         for i in db_product_list:
@@ -618,7 +618,7 @@ class MyCog(Cog):
 
     @command(name='poco')
     async def cmd_poco_stock(self, ctx, product_name='poco'):
-        db_product_list = self.db_dict_smartphones['products']
+        db_product_list = self.db_dict_smartphones
         products = []
         
         for i in db_product_list:
@@ -629,7 +629,7 @@ class MyCog(Cog):
     
     @command(name='opoco')
     async def cmd_poco_stock_out(self, ctx, product_name='poco'):
-        db_product_list = self.db_dict_smartphones['products']
+        db_product_list = self.db_dict_smartphones
         products = []
         
         for i in db_product_list:
@@ -640,7 +640,7 @@ class MyCog(Cog):
 
     @command(name='symphony')
     async def cmd_symphony_stock(self, ctx, product_name='symphony'):
-        db_product_list = self.db_dict_smartphones['products']
+        db_product_list = self.db_dict_smartphones
         products = []
         
         for i in db_product_list:
@@ -651,7 +651,7 @@ class MyCog(Cog):
     
     @command(name='osymphony')
     async def cmd_symphony_stock_out(self, ctx, product_name='symphony'):
-        db_product_list = self.db_dict_smartphones['products']
+        db_product_list = self.db_dict_smartphones
         products = []
         
         for i in db_product_list:
@@ -662,7 +662,7 @@ class MyCog(Cog):
 
     @command(name='huawei')
     async def cmd_huawei_stock(self, ctx, product_name='huawei'):
-        db_product_list = self.db_dict_smartphones['products']
+        db_product_list = self.db_dict_smartphones
         products = []
         
         for i in db_product_list:
@@ -673,7 +673,7 @@ class MyCog(Cog):
     
     @command(name='ohuawei')
     async def cmd_huawei_stock_out(self, ctx, product_name='huawei'):
-        db_product_list = self.db_dict_smartphones['products']
+        db_product_list = self.db_dict_smartphones
         products = []
         
         for i in db_product_list:
@@ -684,7 +684,7 @@ class MyCog(Cog):
 
     @command(name='maximus')
     async def cmd_maximus_stock(self, ctx, product_name='maximus'):
-        db_product_list = self.db_dict_smartphones['products']
+        db_product_list = self.db_dict_smartphones
         products = []
         
         for i in db_product_list:
@@ -695,7 +695,7 @@ class MyCog(Cog):
     
     @command(name='omaximus')
     async def cmd_maximus_stock_out(self, ctx, product_name='maximus'):
-        db_product_list = self.db_dict_smartphones['products']
+        db_product_list = self.db_dict_smartphones
         products = []
         
         for i in db_product_list:
@@ -706,7 +706,7 @@ class MyCog(Cog):
 
     @command(name='walton')
     async def cmd_walton_stock(self, ctx, product_name='walton'):
-        db_product_list = self.db_dict_smartphones['products']
+        db_product_list = self.db_dict_smartphones
         products = []
         
         for i in db_product_list:
@@ -717,7 +717,7 @@ class MyCog(Cog):
     
     @command(name='owalton')
     async def cmd_walton_stock_out(self, ctx, product_name='walton'):
-        db_product_list = self.db_dict_smartphones['products']
+        db_product_list = self.db_dict_smartphones
         products = []
         
         for i in db_product_list:
@@ -728,7 +728,7 @@ class MyCog(Cog):
 
     @command(name='redmi')
     async def cmd_redmi_stock(self, ctx, product_name='redmi'):
-        db_product_list = self.db_dict_smartphones['products']
+        db_product_list = self.db_dict_smartphones
         products = []
         
         for i in db_product_list:
@@ -739,7 +739,7 @@ class MyCog(Cog):
     
     @command(name='oredmi')
     async def cmd_redmi_stock_out(self, ctx, product_name='redmi'):
-        db_product_list = self.db_dict_smartphones['products']
+        db_product_list = self.db_dict_smartphones
         products = []
         
         for i in db_product_list:
@@ -750,7 +750,7 @@ class MyCog(Cog):
 
     @command(name='oneplus')
     async def cmd_oneplus_stock(self, ctx, product_name='oneplus'):
-        db_product_list = self.db_dict_smartphones['products']
+        db_product_list = self.db_dict_smartphones
         products = []
         
         for i in db_product_list:
@@ -761,7 +761,7 @@ class MyCog(Cog):
     
     @command(name='ooneplus')
     async def cmd_oneplus_stock_out(self, ctx, product_name='oneplus'):
-        db_product_list = self.db_dict_smartphones['products']
+        db_product_list = self.db_dict_smartphones
         products = []
         
         for i in db_product_list:
@@ -773,7 +773,7 @@ class MyCog(Cog):
     ########################################### bikes ###################################################
     @command(name='bajaj')
     async def cmd_bajaj_stock(self, ctx, product_name='bajaj'):
-        db_product_list = self.db_dict_bikes['products']
+        db_product_list = self.db_dict_bikes
         products = []
         
         for i in db_product_list:
@@ -784,7 +784,7 @@ class MyCog(Cog):
     
     @command(name='obajaj')
     async def cmd_bajaj_stock_out(self, ctx, product_name='bajaj'):
-        db_product_list = self.db_dict_bikes['products']
+        db_product_list = self.db_dict_bikes
         products = []
         
         for i in db_product_list:
@@ -795,7 +795,7 @@ class MyCog(Cog):
 
     @command(name='yamaha')
     async def cmd_yamaha_stock(self, ctx, product_name='yamaha'):
-        db_product_list = self.db_dict_bikes['products']
+        db_product_list = self.db_dict_bikes
         products = []
         
         for i in db_product_list:
@@ -806,7 +806,7 @@ class MyCog(Cog):
     
     @command(name='oyamaha')
     async def cmd_yamaha_stock_out(self, ctx, product_name='yamaha'):
-        db_product_list = self.db_dict_bikes['products']
+        db_product_list = self.db_dict_bikes
         products = []
         
         for i in db_product_list:
@@ -817,7 +817,7 @@ class MyCog(Cog):
 
     @command(name='honda')
     async def cmd_honda_stock(self, ctx, product_name='honda'):
-        db_product_list = self.db_dict_bikes['products']
+        db_product_list = self.db_dict_bikes
         products = []
         
         for i in db_product_list:
@@ -828,7 +828,7 @@ class MyCog(Cog):
     
     @command(name='ohonda')
     async def cmd_honda_stock_out(self, ctx, product_name='honda'):
-        db_product_list = self.db_dict_bikes['products']
+        db_product_list = self.db_dict_bikes
         products = []
         
         for i in db_product_list:
@@ -839,7 +839,7 @@ class MyCog(Cog):
 
     @command(name='tvs')
     async def cmd_tvs_stock(self, ctx, product_name='tvs'):
-        db_product_list = self.db_dict_bikes['products']
+        db_product_list = self.db_dict_bikes
         products = []
         
         for i in db_product_list:
@@ -850,7 +850,7 @@ class MyCog(Cog):
     
     @command(name='otvs')
     async def cmd_tvs_stock_out(self, ctx, product_name='tvs'):
-        db_product_list = self.db_dict_bikes['products']
+        db_product_list = self.db_dict_bikes
         products = []
         
         for i in db_product_list:
@@ -861,7 +861,7 @@ class MyCog(Cog):
 
     @command(name='hero')
     async def cmd_hero_stock(self, ctx, product_name='hero'):
-        db_product_list = self.db_dict_bikes['products']
+        db_product_list = self.db_dict_bikes
         products = []
         
         for i in db_product_list:
@@ -872,7 +872,7 @@ class MyCog(Cog):
     
     @command(name='ohero')
     async def cmd_hero_stock_out(self, ctx, product_name='hero'):
-        db_product_list = self.db_dict_bikes['products']
+        db_product_list = self.db_dict_bikes
         products = []
         
         for i in db_product_list:
@@ -883,7 +883,7 @@ class MyCog(Cog):
 
     @command(name='lifan')
     async def cmd_lifan_stock(self, ctx, product_name='lifan'):
-        db_product_list = self.db_dict_bikes['products']
+        db_product_list = self.db_dict_bikes
         products = []
         
         for i in db_product_list:
@@ -894,7 +894,7 @@ class MyCog(Cog):
     
     @command(name='olifan')
     async def cmd_lifan_stock_out(self, ctx, product_name='lifan'):
-        db_product_list = self.db_dict_bikes['products']
+        db_product_list = self.db_dict_bikes
         products = []
         
         for i in db_product_list:
@@ -905,7 +905,7 @@ class MyCog(Cog):
 
     @command(name='runner')
     async def cmd_runner_stock(self, ctx, product_name='runner'):
-        db_product_list = self.db_dict_bikes['products']
+        db_product_list = self.db_dict_bikes
         products = []
         
         for i in db_product_list:
@@ -916,7 +916,7 @@ class MyCog(Cog):
     
     @command(name='orunner')
     async def cmd_runner_stock_out(self, ctx, product_name='runner'):
-        db_product_list = self.db_dict_bikes['products']
+        db_product_list = self.db_dict_bikes
         products = []
         
         for i in db_product_list:
