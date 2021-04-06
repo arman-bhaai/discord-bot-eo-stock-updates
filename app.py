@@ -47,9 +47,9 @@ class MyCog(Cog):
         self.print_log('triggered --> cmd_load_all_products_data()')
         
         self.print_log('executing th1')
-        self.dict_futures[1.1] = self.tp_exec.submit(self.load_smartphones_db)
-        self.dict_futures[1.2] = self.tp_exec.submit(self.load_bikes_db)
-        # self.dict_futures[1.3] = self.tp_exec.submit(self.load_test_db) ### test db
+        # self.dict_futures[1.1] = self.tp_exec.submit(self.load_smartphones_db)
+        # self.dict_futures[1.2] = self.tp_exec.submit(self.load_bikes_db)
+        self.dict_futures[1.3] = self.tp_exec.submit(self.load_test_db) ### test db
         await ctx.send('command granted')
 
     @command(name='cmd10')
@@ -142,15 +142,15 @@ class MyCog(Cog):
                 for j in db_list_products_old:
                     if i['name'] == j['name']:
                         self.print_log('single product name matched')
-                        if i['stock'] != j['stock']:
+                        if i['stock'] != j['stock'] :
                             print('stock data modified')
-                            if i['stock'] > 0:
+                            if i['stock'] > 0 and j['stock'] <= 0:
                                 # product stocked in
                                 self.print_log('product stocked in')
                                 # products_stocked_in.append(j)
                                 fields = [("Stocks", i['stock'], True), ('Price', i['price'], True),]
                                 self.bot_send_embed(channel, fields, evt_loop, i['name'], author_name='Stocked In!', colour=0x00FF00)
-                            else:
+                            elif i['stock'] <= 0 and j['stock'] > 0:
                                 # product stocked out
                                 self.print_log('product stocked out')
                                 # products_stocked_out.append(j)
@@ -255,28 +255,12 @@ class MyCog(Cog):
 
     def load_test_db(self):
         print('load_db() started')
-        x=0
         while True:
-        #     if self.evt_exit_th1.is_set():
-        #         # self.evt_exit_th1.clear()
-        #         self.print_log('th1.3 killed')
-        #         break
-        #     # load test db
-        #     # self.load_product_db(
-        #     #     'https://eorange.shop/get-products/Motorcycle-Scooter?type=category&page=',
-        #     #     '&filter=%7B%22short_by%22:%22popularity%22,%22seller_by%22:[],%22brand_by%22:[],%22price%22:%7B%22min%22:0,%22max%22:0%7D%7D',
-        #     #     self.db_dict_bikes,
-        #     #     'bike'
-        #     # )
-            
-
             # load product database function
             page_count = 1
             
-            # self.local_db_dict = {'products':[],'total_product_count':''}
             local_db_list = []
-            x+=1
-            # local_db_dict['products'] = api_dict['data']['products']['data']
+
             # fetch all product pages
             while True:
                 print('reading db file...')
@@ -295,13 +279,13 @@ class MyCog(Cog):
                 
 
                 if page_count == last_page:
-        #             local_db_dict['total_product_count'] = api_dict['data']['products']['total']
                     break
                 page_count += 1
             # sort product list
             local_db_list = sorted(local_db_list, key=lambda k: k['name'])
             # saved processed data to main db
             self.db_dict_smartphones =  local_db_list
+            self.db_dict_bikes = local_db_list
             # self.db_dict_smartphones['total_product_count'] = local_db_dict['total_product_count']
 
             print('sleeping 5(30) sec th 1.3')
@@ -401,7 +385,7 @@ class MyCog(Cog):
         df_idx_len = len(df.index)
         if df_idx_len <= 15:
             styled_table = '```'+tabulate(df, headers=['Products', 'Stocks', 'Prices'], tablefmt='fancy_grid')+'```'
-            self.send_log_async2(timestamp, channel)
+            self.send_log_async(timestamp, channel)
             self.send_log_async(styled_table, channel)
         else:
             idx_row_start = 0
