@@ -47,9 +47,9 @@ class MyCog(Cog):
         self.print_log('triggered --> cmd_load_all_products_data()')
         
         self.print_log('executing th1')
-        # self.dict_futures[1.1] = self.tp_exec.submit(self.load_smartphones_db)
-        # self.dict_futures[1.2] = self.tp_exec.submit(self.load_bikes_db)
-        self.dict_futures[1.3] = self.tp_exec.submit(self.load_test_db) ### test db
+        self.dict_futures[1.1] = self.tp_exec.submit(self.load_smartphones_db)
+        self.dict_futures[1.2] = self.tp_exec.submit(self.load_bikes_db)
+        # self.dict_futures[1.3] = self.tp_exec.submit(self.load_test_db) ### test db
         await ctx.send('command granted')
 
     @command(name='cmd10')
