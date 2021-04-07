@@ -373,10 +373,10 @@ class MyCog(Cog):
     def print_log(self, msg):
         print(msg)
 
-    def bot_log(self, msg, channel):
-        # await channel.send('Test') # We can't do this because of the above comment
-        self.send_log(msg, channel)
-        # asyncio.run_coroutine_threadsafe(self.send_log(msg, channel), self.evt_loop)
+    # def bot_log(self, msg, channel):
+    #     # await channel.send('Test') # We can't do this because of the above comment
+    #     self.send_log(msg, channel)
+    #     # asyncio.run_coroutine_threadsafe(self.send_log(msg, channel), self.evt_loop)
 
     def dict_to_table(self, dic, channel):
         timestamp = f"```\n\n\nUpdated On --> {datetime.now().strftime('%d/%m/%y >> %-I:%M:%S %p')}```"
