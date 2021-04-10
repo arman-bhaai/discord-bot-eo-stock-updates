@@ -42,21 +42,21 @@ class MyCog(Cog):
         
         self.local_db_dict = {}
 
-    @command(name='cmd11')
-    async def cmd_load_all_products_data(self, ctx):
-        self.print_log('triggered --> cmd_load_all_products_data()')
+    # @command(name='cmd11')
+    # async def cmd_load_all_products_data(self, ctx):
+    #     self.print_log('triggered --> cmd_load_all_products_data()')
         
-        self.print_log('executing th1')
-        self.dict_futures[1.1] = self.tp_exec.submit(self.load_smartphones_db)
-        self.dict_futures[1.2] = self.tp_exec.submit(self.load_bikes_db)
-        # self.dict_futures[1.3] = self.tp_exec.submit(self.load_test_db) ### test db
-        await ctx.send('command granted')
+    #     self.print_log('executing th1')
+    #     self.dict_futures[1.1] = self.tp_exec.submit(self.load_smartphones_db)
+    #     self.dict_futures[1.2] = self.tp_exec.submit(self.load_bikes_db)
+    #     # self.dict_futures[1.3] = self.tp_exec.submit(self.load_test_db) ### test db
+    #     await ctx.send('command granted')
 
-    @command(name='cmd10')
-    async def cmd_kill_load_all_products_data(self, ctx):
-        self.print_log('triggered --> cmd_kill_load_all_products_data')
-        self.evt_exit_th1.set()
-        await ctx.send('command granted')
+    # @command(name='cmd10')
+    # async def cmd_kill_load_all_products_data(self, ctx):
+    #     self.print_log('triggered --> cmd_kill_load_all_products_data')
+    #     self.evt_exit_th1.set()
+    #     await ctx.send('command granted')
 
     # @command(name='cmd01')
     # async def cmd_run_console_app(self, ctx):
@@ -352,6 +352,16 @@ class MyCog(Cog):
     @Cog.listener()
     async def on_ready(self):
         print("MyCog is ready")
+
+        self.print_log('triggered --> cmd_load_all_products_data()')
+        self.print_log('executing th1')
+        self.dict_futures[1.1] = self.tp_exec.submit(self.load_smartphones_db)
+        self.dict_futures[1.2] = self.tp_exec.submit(self.load_bikes_db)
+        # self.dict_futures[1.3] = self.tp_exec.submit(self.load_test_db) ### test db
+        await self.bot.dict_channels['robot_commands'].send('I have been reconnected')
+
+        self.print_log('trigged --> cmd_run_loop_mass_products()')
+        self.dict_futures[4] = self.tp_exec.submit(self.loop_mass_products, asyncio.get_event_loop())
         # await self.cmd_load_all_products_data(None)
         # input('start func')
         # self.test_run('iphone')
