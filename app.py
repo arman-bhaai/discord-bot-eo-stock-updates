@@ -375,8 +375,8 @@ class MyCog(Cog):
         self.dict_futures[1.1] = self.tp_exec.submit(self.load_smartphones_db)
         self.dict_futures[1.2] = self.tp_exec.submit(self.load_bikes_db)
 
-        self.print_log('trigged --> cmd_run_loop_mass_products()')
-        self.dict_futures[4] = self.tp_exec.submit(self.loop_mass_products, asyncio.get_event_loop())
+        # self.print_log('trigged --> cmd_run_loop_mass_products()')
+        # self.dict_futures[4] = self.tp_exec.submit(self.loop_mass_products, asyncio.get_event_loop())
 
         self.print_log('trigged --> cmd_run_loop_single_products()')
         self.dict_futures[3] = self.tp_exec.submit(self.loop_single_products, asyncio.get_event_loop())
