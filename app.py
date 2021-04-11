@@ -42,21 +42,21 @@ class MyCog(Cog):
         
         self.local_db_dict = {}
 
-    # @command(name='cmd11')
-    # async def cmd_load_all_products_data(self, ctx):
-    #     self.print_log('triggered --> cmd_load_all_products_data()')
+    @command(name='ccmd11')
+    async def cmd_load_all_products_data(self, ctx):
+        # self.print_log('triggered --> cmd_load_all_products_data()')
         
-    #     self.print_log('executing th1')
-    #     self.dict_futures[1.1] = self.tp_exec.submit(self.load_smartphones_db)
-    #     self.dict_futures[1.2] = self.tp_exec.submit(self.load_bikes_db)
-    #     # self.dict_futures[1.3] = self.tp_exec.submit(self.load_test_db) ### test db
-    #     await ctx.send('command granted')
+        # self.print_log('executing th1')
+        # self.dict_futures[1.1] = self.tp_exec.submit(self.load_smartphones_db)
+        # self.dict_futures[1.2] = self.tp_exec.submit(self.load_bikes_db)
+        # self.dict_futures[1.3] = self.tp_exec.submit(self.load_test_db) ### test db
+        await ctx.send('command granted')
 
-    # @command(name='cmd10')
-    # async def cmd_kill_load_all_products_data(self, ctx):
-    #     self.print_log('triggered --> cmd_kill_load_all_products_data')
-    #     self.evt_exit_th1.set()
-    #     await ctx.send('command granted')
+    @command(name='ccmd10')
+    async def cmd_kill_load_all_products_data(self, ctx):
+        self.print_log('triggered --> cmd_kill_load_all_products_data')
+        self.evt_exit_th1.set()
+        await ctx.send('command granted')
 
     # @command(name='cmd01')
     # async def cmd_run_console_app(self, ctx):
@@ -79,22 +79,22 @@ class MyCog(Cog):
         # for fut in self.dict_futures.values():
         #     print(fut.result())
 
-    @command(name='cmd21')
-    async def cmd_run_loop_mass_products(self, ctx):
-        self.print_log('trigged --> cmd_run_loop_mass_products()')
-        self.dict_futures[4] = self.tp_exec.submit(self.loop_mass_products, asyncio.get_event_loop())
-        # self.mass_products_stocks(
-        #         self.db_dict_smartphones,
-        #         self.bot.dict_channels['all_phones_stocks'],
-        #         'smartphones'
-        #     )
+    # @command(name='ccmd21')
+    # async def cmd_run_loop_mass_products(self, ctx):
+    #     self.print_log('trigged --> cmd_run_loop_mass_products()')
+    #     self.dict_futures[4] = self.tp_exec.submit(self.loop_mass_products, asyncio.get_event_loop())
+    #     # self.mass_products_stocks(
+    #     #         self.db_dict_smartphones,
+    #     #         self.bot.dict_channels['all_phones_stocks'],
+    #     #         'smartphones'
+    #     #     )
 
-    @command(name='cmd31')
+    @command(name='ccmd31')
     async def cmd_run_loop_single_products(self, ctx):
-        self.print_log('trigged --> cmd_run_loop_single_products()')
-        self.dict_futures[3] = self.tp_exec.submit(self.loop_single_products, asyncio.get_event_loop())
+        pass
 
     def loop_single_products(self, evt_loop):
+        self.lst_stocked_in = []
         print('started load_single_products(self)')
         while True:
             if self.evt_exit_th3.is_set():
@@ -125,7 +125,7 @@ class MyCog(Cog):
             self.db_dict_bikes_old = db_new2
 
             self.print_log('sleeping 5 sec')
-            time.sleep(20)
+            time.sleep(5)
     
     def single_product_stocks(self, product_name, db_list_products_new, db_list_products_old, channel, evt_loop):
         self.print_log(f'checking single {product_name} stocks...')
@@ -138,7 +138,7 @@ class MyCog(Cog):
         #     db_list_products_old = db_list_products_new
 
         if db_list_products_old:
-            for i in db_list_products_new:
+            for idx, i in enumerate(db_list_products_new):
                 for j in db_list_products_old:
                     if i['name'] == j['name']:
                         self.print_log('single product name matched')
@@ -147,15 +147,25 @@ class MyCog(Cog):
                             if i['stock'] > 0 and j['stock'] <= 0:
                                 # product stocked in
                                 self.print_log('product stocked in')
-                                # products_stocked_in.append(j)
+                                self.lst_stocked_in.append(i)
                                 fields = [("Stocks", i['stock'], True), ('Price', i['price'], True),]
                                 self.bot_send_embed(channel, fields, evt_loop, i['name'], author_name='Stocked In!', colour=0x00FF00)
                             elif i['stock'] <= 0 and j['stock'] > 0:
                                 # product stocked out
                                 self.print_log('product stocked out')
+                                for idx3, k in enumerate(self.lst_stocked_in):
+                                    if k['name'] = i['name']:
+                                        self.lst_stocked_in.pop(idx3)
                                 # products_stocked_out.append(j)
-                                fields = [("Stocks", i['stock'], True), ('Price', i['price'], True),]
-                                self.bot_send_embed(channel, fields, evt_loop, i['name'], author_name='Stocked Out!', colour=0xFF0000)
+                                # fields = [("Stocks", i['stock'], True), ('Price', i['price'], True),]
+                                # self.bot_send_embed(channel, fields, evt_loop, i['name'], author_name='Stocked Out!', colour=0xFF0000)
+                            elif i['stock'] > j['stock']:
+                                for idx4, l in enumerate(self.lst_stocked_in):
+                                    if i['name'] == l['name']:
+                                        self.print_log('product stock increased')
+                                        fields = [("Stocks", i['stock'], True), ('Price', i['price'], True),]
+                                        self.bot_send_embed(channel, fields, evt_loop, i['name'], author_name='Stock Increased!', colour=0x1E90FF)
+                                        self.lst_stocked_in[idx4] = i
 
         return db_list_products_new
         
@@ -230,6 +240,8 @@ class MyCog(Cog):
                 self.print_log('th1.1 killed')
                 break
             # load smartphones db
+            # with open('deldb.json', 'r') as f:
+            #     self.db_dict_smartphones = json.load(f)['data']['products']['data']
             self.db_dict_smartphones = self.load_product_db(
                 'https://eorange.shop/get-products/Smartphone?type=category&page=',
                 '&filter=%7B%22short_by%22:%22popularity%22,%22seller_by%22:[],%22brand_by%22:[],%22price%22:%7B%22min%22:0,%22max%22:0%7D%7D',
@@ -251,7 +263,7 @@ class MyCog(Cog):
                 'bike'
             )
             print('sleeping 5 sec th 1.2')
-            time.sleep(5)
+            ### time.sleep(5)
 
     def load_test_db(self):
         print('load_db() started')
@@ -352,20 +364,22 @@ class MyCog(Cog):
     @Cog.listener()
     async def on_ready(self):
         print("MyCog is ready")
-
-        self.print_log('triggered --> cmd_load_all_products_data()')
-        self.print_log('executing th1')
-        self.dict_futures[1.1] = self.tp_exec.submit(self.load_smartphones_db)
-        self.dict_futures[1.2] = self.tp_exec.submit(self.load_bikes_db)
-        # self.dict_futures[1.3] = self.tp_exec.submit(self.load_test_db) ### test db
-        await self.bot.dict_channels['robot_commands'].send('I have been reconnected')
-
-        self.print_log('trigged --> cmd_run_loop_mass_products()')
-        self.dict_futures[4] = self.tp_exec.submit(self.loop_mass_products, asyncio.get_event_loop())
         # await self.cmd_load_all_products_data(None)
         # input('start func')
         # self.test_run('iphone')
         # input('end func')
+        await self.bot.dict_channels['single_phone_stocks'].send('Got ready')
+
+        self.print_log('triggered --> cmd_load_all_products_data()')  
+        self.print_log('executing th1')
+        self.dict_futures[1.1] = self.tp_exec.submit(self.load_smartphones_db)
+        self.dict_futures[1.2] = self.tp_exec.submit(self.load_bikes_db)
+
+        self.print_log('trigged --> cmd_run_loop_mass_products()')
+        self.dict_futures[4] = self.tp_exec.submit(self.loop_mass_products, asyncio.get_event_loop())
+
+        self.print_log('trigged --> cmd_run_loop_single_products()')
+        self.dict_futures[3] = self.tp_exec.submit(self.loop_single_products, asyncio.get_event_loop())
     
 
         
@@ -383,13 +397,13 @@ class MyCog(Cog):
     def print_log(self, msg):
         print(msg)
 
-    # def bot_log(self, msg, channel):
-    #     # await channel.send('Test') # We can't do this because of the above comment
-    #     self.send_log(msg, channel)
-    #     # asyncio.run_coroutine_threadsafe(self.send_log(msg, channel), self.evt_loop)
+    def bot_log(self, msg, channel):
+        # await channel.send('Test') # We can't do this because of the above comment
+        self.send_log(msg, channel)
+        # asyncio.run_coroutine_threadsafe(self.send_log(msg, channel), self.evt_loop)
 
     def dict_to_table(self, dic, channel):
-        timestamp = 'Command Granted, Boss!' # f"```\n\n\nUpdated On --> {datetime.now().strftime('%d/%m/%y >> %-I:%M:%S %p')}```"
+        timestamp = f"```\n\n\nUpdated On --> {datetime.now().strftime('%d/%m/%y >> %-I:%M:%S %p')}```"
         df=pd.DataFrame(dic, columns=['name', 'stock', 'price'])
         df.index += 1
         df_idx_len = len(df.index)
@@ -421,7 +435,7 @@ class MyCog(Cog):
             self.send_log_async(styled_table, channel)
 
     def dict_to_table2(self, dic, channel, evt_loop): #for threads
-        timestamp = 'Command Granted, Boss!' # f"```\n\n\nUpdated On --> {datetime.now().strftime('%d/%m/%y >> %-I:%M:%S %p')}```"
+        timestamp = f"```\n\n\nUpdated On --> {datetime.now().strftime('%d/%m/%y >> %-I:%M:%S %p')}```"
         df=pd.DataFrame(dic, columns=['name', 'stock', 'price'])
         df.index += 1
         df_idx_len = len(df.index)
@@ -954,7 +968,6 @@ class DiscordBot(commands.Bot):
      
     def run(self):
         DISCORD_TOKEN = os.environ['DISCORD_TOKEN']
-        # DISCORD_TOKEN = os.environ['TEST_DISCORD_TOKEN'] ### for test server
 
         self.print_log('running bot')
         super().run(DISCORD_TOKEN, reconnect=True)
