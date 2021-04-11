@@ -154,7 +154,7 @@ class MyCog(Cog):
                                 # product stocked out
                                 self.print_log('product stocked out')
                                 for idx3, k in enumerate(self.lst_stocked_in):
-                                    if k['name'] = i['name']:
+                                    if k['name'] == i['name']:
                                         self.lst_stocked_in.pop(idx3)
                                 # products_stocked_out.append(j)
                                 # fields = [("Stocks", i['stock'], True), ('Price', i['price'], True),]
