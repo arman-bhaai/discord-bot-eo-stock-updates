@@ -137,7 +137,7 @@ class MyCog(Cog):
         # if not db_list_products_old:
         #     db_list_products_old = db_list_products_new
 
-        def single_product_stocks(self, product_name, db_list_products_new, db_list_products_old, channel, evt_loop):
+    def single_product_stocks(self, product_name, db_list_products_new, db_list_products_old, channel, evt_loop):
         self.print_log(f'checking single {product_name} stocks...')
         # find out instant stock modification
         # load product database
@@ -147,7 +147,7 @@ class MyCog(Cog):
         # if not db_list_products_old:
         #     db_list_products_old = db_list_products_new
 
-        def single_product_stocks(self, product_name, db_list_products_new, db_list_products_old, channel, evt_loop):
+    def single_product_stocks(self, product_name, db_list_products_new, db_list_products_old, channel, evt_loop):
         self.print_log(f'checking single {product_name} stocks...')
         # find out instant stock modification
         # load product database
