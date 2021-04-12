@@ -137,26 +137,6 @@ class MyCog(Cog):
         # if not db_list_products_old:
         #     db_list_products_old = db_list_products_new
 
-    def single_product_stocks(self, product_name, db_list_products_new, db_list_products_old, channel, evt_loop):
-        self.print_log(f'checking single {product_name} stocks...')
-        # find out instant stock modification
-        # load product database
-        # db_list_products_new = db_list_products_new
-        # db_list_products_old = db_list_products_old
-
-        # if not db_list_products_old:
-        #     db_list_products_old = db_list_products_new
-
-    def single_product_stocks(self, product_name, db_list_products_new, db_list_products_old, channel, evt_loop):
-        self.print_log(f'checking single {product_name} stocks...')
-        # find out instant stock modification
-        # load product database
-        # db_list_products_new = db_list_products_new
-        # db_list_products_old = db_list_products_old
-
-        # if not db_list_products_old:
-        #     db_list_products_old = db_list_products_new
-
         if db_list_products_old:
             for idx, i in enumerate(db_list_products_new):
                 for j in db_list_products_old:
@@ -173,20 +153,19 @@ class MyCog(Cog):
                             elif i['stock'] <= 0 and j['stock'] > 0:
                                 # product stocked out
                                 self.print_log('product stocked out')
-                                # for idx3, k in enumerate(self.lst_stocked_in):
-                                #     if k['name'] == i['name']:
-                                #         self.lst_stocked_in.pop(idx3)
+                                for idx3, k in enumerate(self.lst_stocked_in):
+                                    if k['name'] == i['name']:
+                                        self.lst_stocked_in.pop(idx3)
                                 # products_stocked_out.append(j)
                                 # fields = [("Stocks", i['stock'], True), ('Price', i['price'], True),]
                                 # self.bot_send_embed(channel, fields, evt_loop, i['name'], author_name='Stocked Out!', colour=0xFF0000)
-                            elif i['stock'] > j['stock'] and j['stock'] > 0:
-                                # for idx4, l in enumerate(self.lst_stocked_in):
-                                    # if i['name'] == l['name']:
-                                self.print_log('product stock increased')
-                                fields = [("Stocks", i['stock'], True), ('Price', i['price'], True),]
-                                self.bot_send_embed(channel, fields, evt_loop, i['name'], author_name='Stock Increased!', colour=0x1E90FF)
-                                        # self.lst_stocked_in[idx4] = i
-                          
+                            elif i['stock'] > j['stock']:
+                                for idx4, l in enumerate(self.lst_stocked_in):
+                                    if i['name'] == l['name']:
+                                        self.print_log('product stock increased')
+                                        fields = [("Stocks", i['stock'], True), ('Price', i['price'], True),]
+                                        self.bot_send_embed(channel, fields, evt_loop, i['name'], author_name='Stock Increased!', colour=0x1E90FF)
+                                        self.lst_stocked_in[idx4] = i
 
         return db_list_products_new
         
