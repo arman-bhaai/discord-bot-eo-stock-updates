@@ -247,6 +247,7 @@ class MyCog(Cog):
                 '&filter=%7B%22short_by%22:%22popularity%22,%22seller_by%22:[],%22brand_by%22:[],%22price%22:%7B%22min%22:0,%22max%22:0%7D%7D',
                 'smartphone'
             )
+            print('checkkkkkkkkkkkkkkk', self.db_dict_smartphones)
             print('sleeping 5 sec th 1.1')
             time.sleep(5)
     
@@ -317,7 +318,7 @@ class MyCog(Cog):
             api_dict = requests.get(url_smartphones).json()
             last_page = api_dict['data']['products']['last_page']
             product_list = api_dict['data']['products']['data']
-            print('checkkkkkkkkkkkkkkkkkkkk', api_dict)
+            # print('checkkkkkkkkkkkkkkkkkkkk', api_dict)
 
             local_db_list += product_list
             
@@ -374,13 +375,13 @@ class MyCog(Cog):
         self.print_log('triggered --> cmd_load_all_products_data()')  
         self.print_log('executing th1')
         self.dict_futures[1.1] = self.tp_exec.submit(self.load_smartphones_db)
-        self.dict_futures[1.2] = self.tp_exec.submit(self.load_bikes_db)
+        # self.dict_futures[1.2] = self.tp_exec.submit(self.load_bikes_db)
 
-        self.print_log('trigged --> cmd_run_loop_mass_products()')
-        self.dict_futures[4] = self.tp_exec.submit(self.loop_mass_products, asyncio.get_event_loop())
+        # self.print_log('trigged --> cmd_run_loop_mass_products()')
+        # self.dict_futures[4] = self.tp_exec.submit(self.loop_mass_products, asyncio.get_event_loop())
 
-        self.print_log('trigged --> cmd_run_loop_single_products()')
-        self.dict_futures[3] = self.tp_exec.submit(self.loop_single_products, asyncio.get_event_loop())
+        # self.print_log('trigged --> cmd_run_loop_single_products()')
+        # self.dict_futures[3] = self.tp_exec.submit(self.loop_single_products, asyncio.get_event_loop())
     
 
         
