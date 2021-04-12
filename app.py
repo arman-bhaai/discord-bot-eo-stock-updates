@@ -162,9 +162,9 @@ class MyCog(Cog):
                             elif i['stock'] > j['stock'] and j['stock'] >  0:
                                 #for idx4, l in enumerate(self.lst_stocked_in):
 								#	if i['name'] == l['name']:
-								self.print_log('product stock increased')
-								fields = [("Stocks", i['stock'], True), ('Price', i['price'], True),]
-								self.bot_send_embed(channel, fields, evt_loop, i['name'], author_name='Stock Increased!', colour=0x1E90FF)
+						        self.print_log('product stock increased')
+							    fields = [("Stocks", i['stock'], True), ('Price', i['price'], True),]
+							    self.bot_send_embed(channel, fields, evt_loop, i['name'], author_name='Stock Increased!', colour=0x1E90FF)
 								#self.lst_stocked_in[idx4] = i
                           
 
