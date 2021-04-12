@@ -404,7 +404,7 @@ class MyCog(Cog):
         # asyncio.run_coroutine_threadsafe(self.send_log(msg, channel), self.evt_loop)
 
     def dict_to_table(self, dic, channel):
-        timestamp = f"```\n\n\nUpdated On --> {datetime.now().strftime('%d/%m/%y >> %-I:%M:%S %p')}```"
+        timestamp = '' #f"```\n\n\nUpdated On --> {datetime.now().strftime('%d/%m/%y >> %-I:%M:%S %p')}```"
         df=pd.DataFrame(dic, columns=['name', 'stock', 'price'])
         df.index += 1
         df_idx_len = len(df.index)
@@ -436,7 +436,7 @@ class MyCog(Cog):
             self.send_log_async(styled_table, channel)
 
     def dict_to_table2(self, dic, channel, evt_loop): #for threads
-        timestamp = f"```\n\n\nUpdated On --> {datetime.now().strftime('%d/%m/%y >> %-I:%M:%S %p')}```"
+        timestamp = '' #f"```\n\n\nUpdated On --> {datetime.now().strftime('%d/%m/%y >> %-I:%M:%S %p')}```"
         df=pd.DataFrame(dic, columns=['name', 'stock', 'price'])
         df.index += 1
         df_idx_len = len(df.index)
