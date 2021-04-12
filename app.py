@@ -247,6 +247,7 @@ class MyCog(Cog):
                 '&filter=%7B%22short_by%22:%22popularity%22,%22seller_by%22:[],%22brand_by%22:[],%22price%22:%7B%22min%22:0,%22max%22:0%7D%7D',
                 'smartphone'
             )
+            print(self.db_dict_smartphones)
             print('sleeping 5 sec th 1.1')
             time.sleep(5)
     
