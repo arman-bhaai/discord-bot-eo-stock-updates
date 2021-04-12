@@ -137,6 +137,26 @@ class MyCog(Cog):
         # if not db_list_products_old:
         #     db_list_products_old = db_list_products_new
 
+        def single_product_stocks(self, product_name, db_list_products_new, db_list_products_old, channel, evt_loop):
+        self.print_log(f'checking single {product_name} stocks...')
+        # find out instant stock modification
+        # load product database
+        # db_list_products_new = db_list_products_new
+        # db_list_products_old = db_list_products_old
+
+        # if not db_list_products_old:
+        #     db_list_products_old = db_list_products_new
+
+        def single_product_stocks(self, product_name, db_list_products_new, db_list_products_old, channel, evt_loop):
+        self.print_log(f'checking single {product_name} stocks...')
+        # find out instant stock modification
+        # load product database
+        # db_list_products_new = db_list_products_new
+        # db_list_products_old = db_list_products_old
+
+        # if not db_list_products_old:
+        #     db_list_products_old = db_list_products_new
+
         if db_list_products_old:
             for idx, i in enumerate(db_list_products_new):
                 for j in db_list_products_old:
@@ -166,6 +186,7 @@ class MyCog(Cog):
                                 fields = [("Stocks", i['stock'], True), ('Price', i['price'], True),]
                                 self.bot_send_embed(channel, fields, evt_loop, i['name'], author_name='Stock Increased!', colour=0x1E90FF)
                                         # self.lst_stocked_in[idx4] = i
+                          
 
         return db_list_products_new
         
