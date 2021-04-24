@@ -15,5 +15,3 @@
 * ### *My Personal Portfolio* ---> **https://arman-bhaai.github.io** *(some of my great projects are listed on my portfolio, so make sure you went through this)*
 * ### *Find Me on Github* ---> **https://github.com/arman-bhaai**
 * ### *Find Me on Facebook* ---> **[fb.me/arman.bhaai](https://www.facebook.com/arman.bhaai)**
-
-![alt txt](create-deck.png)
